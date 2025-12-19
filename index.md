@@ -1,10 +1,9 @@
 ---
-layout: default
+layout: home
 title: Home
 ---
 
-# Welcome to My Website
+## About
 
-This site is built from scratch using **Jekyll** and **GitHub Pages**.
-
-[About Me](about.md)
+I’m a robotics engineer focused on perception, manipulation, and learning-based control.
+Currently working on vision-guided manipulation and imitation learning.

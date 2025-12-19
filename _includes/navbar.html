@@ -1,0 +1,8 @@
+<nav class="navbar">
+  <div class="nav-title">{{ site.title }}</div>
+  <div class="nav-links">
+    {% for item in site.nav %}
+      <a href="{{ item.link }}">{{ item.name }}</a>
+    {% endfor %}
+  </div>
+</nav>
