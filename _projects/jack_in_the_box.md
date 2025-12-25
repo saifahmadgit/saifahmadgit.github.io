@@ -1,7 +1,7 @@
 ---
-title: Jack-in-the-Box Dynamics
-youtube: isUHyNV9Cu8
+title: Jack-in-the-Box Dynamics Simulation
+tags: Dynamics, Simulation, Mechanical Systems
+gif: /assets/gifs/jack_demo.gif
 ---
 
-A simulation study of nonlinear spring-mass dynamics during the pop-up motion of a Jack-in-the-Box mechanism.  
-Built using SymPy for symbolic dynamics and visualized with Python animation tools.
+<iframe src="https://www.youtube.com/embed/isUHyNV9Cu8" frameborder="0" allowfullscreen></iframe>

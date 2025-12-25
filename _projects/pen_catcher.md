@@ -1,7 +1,7 @@
 ---
-title: Pen Catcher Robot
-youtube: lAsviFo0WxI
+title: Reactive Pen Catcher
+tags: Control, Vision, Real-Time Systems
+gif: /assets/gifs/pen_demo.gif
 ---
 
-A high-speed robotic arm predicting falling trajectories of objects in real time and intercepting them mid-air.  
-Combines computer vision, state estimation, and motion planning for reflex-like behavior.
+<iframe src="https://www.youtube.com/embed/lAsviFo0WxI" frameborder="0" allowfullscreen></iframe>
