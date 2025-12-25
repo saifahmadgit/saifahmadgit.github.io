@@ -1,7 +1,7 @@
 ---
-title: Reactive Pen Catcher
-tags: Control, Vision, Real-Time Systems
+title: Pen Catcher Robot
+tags: Control, Vision, Real-Time
 gif: /assets/gifs/pen_demo.gif
 ---
 
-<iframe src="https://www.youtube.com/embed/lAsviFo0WxI" frameborder="0" allowfullscreen></iframe>
+<iframe src="https://www.youtube.com/embed/lAsviFo0WxI" allowfullscreen></iframe>

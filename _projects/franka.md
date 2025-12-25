@@ -1,11 +1,11 @@
 ---
-title: Vision-Guided Pick-and-Place with Franka Emika
-tags: ROS 2, MoveIt 2, Perception, Manipulation
+title: Franka Vision-Guided Pick & Place
+tags: ROS 2, MoveIt 2, Perception
 gif: /assets/gifs/franka_demo.gif
 ---
 
-## Real Robot Demo
-<iframe src="https://www.youtube.com/embed/L8qCKQ8qogY" frameborder="0" allowfullscreen></iframe>
+## Real Robot
+<iframe src="https://www.youtube.com/embed/L8qCKQ8qogY" allowfullscreen></iframe>
 
-## Simulation Demo
-<iframe src="https://www.youtube.com/embed/MUO35U0UXR4" frameborder="0" allowfullscreen></iframe>
+## Simulation
+<iframe src="https://www.youtube.com/embed/MUO35U0UXR4" allowfullscreen></iframe>
