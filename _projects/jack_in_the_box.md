@@ -1,4 +1,5 @@
 ---
+layout: project
 title: Jack-in-the-Box Dynamics
 tags: Dynamics, Simulation
 gif: /assets/gifs/jack_demo.gif

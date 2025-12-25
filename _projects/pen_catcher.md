@@ -1,4 +1,5 @@
 ---
+layout: project
 title: Pen Catcher Robot
 tags: Control, Vision, Real-Time
 gif: /assets/gifs/pen_demo.gif
