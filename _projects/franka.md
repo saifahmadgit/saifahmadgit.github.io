@@ -1,4 +1,5 @@
 ---
+layout: project
 title: Franka Vision-Guided Pick & Place
 tags: ROS 2, MoveIt 2, Perception
 gif: /assets/gifs/franka_demo.gif

@@ -4,9 +4,11 @@ layout: default
 
 <div class="main-grid">
 
-  <!-- LEFT SIDEBAR -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <img class="profile-pic" src="{{ site.baseurl }}/assets/images/profile.jpg" alt="Saif Ahmad">
+    <img class="profile-pic"
+         src="{{ site.baseurl }}/assets/images/profile.jpg"
+         alt="Saif Ahmad">
 
     <h1>Saif Ahmad</h1>
     <p class="degree">MS in Robotics</p>
@@ -14,14 +16,14 @@ layout: default
     <p class="location">📍 United States</p>
 
     <div class="links">
-      <a href="mailto:saif.ahmad98745@gmail.com">saif.ahmad98745@gmail.com</a>
-      <a href="https://github.com/saifahmadgit" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/saif_ahmad" target="_blank">LinkedIn</a>
-      <a href="{{ site.baseurl }}/resume.pdf" target="_blank"> Resume</a>
+      <a href="mailto:saif.ahmad98745@gmail.com">📧 saif.ahmad98745@gmail.com</a>
+      <a href="https://github.com/saifahmadgit" target="_blank">🐙 GitHub</a>
+      <a href="https://www.linkedin.com/in/saif_ahmad" target="_blank">🔗 LinkedIn</a>
+      <a href="{{ site.baseurl }}/resume.pdf" target="_blank">📄 Resume</a>
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- PROJECTS -->
   <main class="content">
     <h2>Featured Robotics Projects</h2>
 
@@ -29,7 +31,9 @@ layout: default
       {% for project in site.projects %}
         <div class="project-card">
           <a href="{{ project.url | relative_url }}">
-            <img src="{{ site.baseurl }}{{ project.gif }}" alt="{{ project.title }}">
+            <img class="project-gif"
+                 src="{{ site.baseurl }}{{ project.gif }}"
+                 alt="{{ project.title }}">
             <h3>{{ project.title }}</h3>
           </a>
           <p>{{ project.tags }}</p>

@@ -1,7 +1,8 @@
 ---
-layout: default
-title: Home
+layout: home
+title: Portfolio
 ---
+
 
 <section class="projects-grid">
 
