@@ -1,8 +1,8 @@
-<nav class="navbar">
-  <div class="nav-title">{{ site.title }}</div>
+<div class="navbar">
+  <strong>{{ site.title }}</strong>
   <div class="nav-links">
-    {% for item in site.nav %}
-      <a href="{{ item.link }}">{{ item.name }}</a>
-    {% endfor %}
+    <a href="{{ '/projects/' | relative_url }}">Portfolio</a>
+    <a href="{{ '/resume.pdf' | relative_url }}" target="_blank">Resume</a>
+    <a href="{{ '/about/' | relative_url }}">About</a>
   </div>
-</nav>
+</div>

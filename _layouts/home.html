@@ -2,27 +2,61 @@
 layout: default
 ---
 
-<section class="about">
-  {{ content }}
-</section>
+<div class="main-grid">
 
-<section class="projects">
-  <h2>Featured Projects</h2>
-  {% for project in site.projects %}
-    <div class="project-card">
-      <img src="{{ project.image }}" />
-      <div>
-        <h3>
-          <a href="{{ project.url }}">{{ project.title }}</a>
-        </h3>
-        <p>{{ project.description }}</p>
+  <!-- ===== LEFT SIDEBAR ===== -->
+  <div class="sidebar">
+    <img src="{{ '/assets/images/profile.jpg' | relative_url }}" alt="Profile">
 
-        <div class="tags">
-          {% for tag in project.tags %}
-            <span class="tag">{{ tag }}</span>
-          {% endfor %}
+    <h1>Saif Ahmad</h1>
+    <p>MS in Robotics</p>
+    <p>Robotics · Perception · Manipulation</p>
+    <p>📍 United States</p>
+
+    <div class="links">
+      <a href="https://github.com/saifahmadgit" target="_blank">GitHub</a>
+      <a href="https://www.linkedin.com/in/saifahmad" target="_blank">LinkedIn</a>
+      <a href="mailto:saifahmad@email.com">Email</a>
+      <a href="{{ '/resume.pdf' | relative_url }}" target="_blank">Resume</a>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div>
+
+    <!-- Featured -->
+    <div class="section">
+      <h2>Featured Robotics Projects</h2>
+
+      <div class="project-grid">
+        {% for project in site.projects limit:4 %}
+        <div class="project-card">
+          <a href="{{ project.url }}">
+            <img src="{{ project.image | relative_url }}" alt="">
+            <h3>{{ project.title }}</h3>
+          </a>
+          <p>{{ project.tags }}</p>
         </div>
+        {% endfor %}
       </div>
     </div>
-  {% endfor %}
-</section>
+
+    <!-- Other -->
+    <div class="section">
+      <h2>Other Projects</h2>
+
+      <div class="project-grid">
+        {% for project in site.projects offset:4 %}
+        <div class="project-card">
+          <a href="{{ project.url }}">
+            <img src="{{ project.image | relative_url }}" alt="">
+            <h3>{{ project.title }}</h3>
+          </a>
+          <p>{{ project.tags }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
