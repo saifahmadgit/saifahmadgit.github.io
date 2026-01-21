@@ -34,4 +34,11 @@ title: Portfolio
     <h3>Pen Catcher Robot</h3>
   </div>
 
+  <div class="project-card no-image">
+  <a href="{{ site.baseurl }}/projects/quadruped_locomotion_rl/">
+    <h3>Quadruped Locomotion with Reinforcement Learning (TBD)</h3>
+  </a>
+</div>
+
+
 </section>
