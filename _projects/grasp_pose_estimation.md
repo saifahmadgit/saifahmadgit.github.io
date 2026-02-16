@@ -1,9 +1,11 @@
 ---
 layout: project
 title: Prompt-to-Pose Grasp Estimation
+order: 3
 tags: Grasping, Vision, Learning
 gif: /assets/gifs/grasp_demo.gif
 ---
+
 
 <iframe class="video" src="https://www.youtube.com/embed/QoFd4tUE89s" allowfullscreen></iframe>
 

@@ -1,9 +1,12 @@
 ---
 layout: project
 title: Jack-in-the-Box Dynamics
+order: 4
 tags: Dynamics, Simulation
 gif: /assets/gifs/jack_demo.gif
 ---
+
+
 
 <iframe class="video" src="https://www.youtube.com/embed/isUHyNV9Cu8" allowfullscreen></iframe>
 

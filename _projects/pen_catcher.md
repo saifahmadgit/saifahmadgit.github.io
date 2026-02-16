@@ -1,9 +1,11 @@
 ---
 layout: project
 title: Pen Catcher Robot
+order: 5
 tags: Control, Vision, Real-Time
 gif: /assets/gifs/pen_demo.gif
 ---
+
 
 <iframe class="video" src="https://www.youtube.com/embed/lAsviFo0WxI" allowfullscreen></iframe>
 

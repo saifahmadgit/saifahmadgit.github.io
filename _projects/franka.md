@@ -1,9 +1,11 @@
 ---
 layout: project
 title: Franka Vision-Guided Pick and Place
+order: 2
 tags: Grasping, Vision, Learning
 gif: /assets/gifs/franka_demo.gif
 ---
+
 
 
 ## Overview
