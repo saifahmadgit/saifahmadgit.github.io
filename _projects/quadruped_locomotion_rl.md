@@ -2,7 +2,7 @@
 layout: project
 title: Unitree Go2 — PPO Sim-to-Real Locomotion in Genesis
 tags: Locomotion, Reinforcement Learning, Sim-to-Real, Domain Randomization
-gif: /assets/gifs/sim2real.gif
+gif: /assets/gifs/sim_to_real.gif
 ---
 
 ## Overview
@@ -16,6 +16,28 @@ This project trains a **Unitree Go2 quadruped walking policy** in **Genesis** an
 - **Variable stiffness control (PLS)**: the policy outputs **per-leg stiffness** in addition to joint position targets
 
 The final result is a policy that can track velocity commands robustly under randomized dynamics and delayed actuation, while staying within physically plausible motor limits.
+
+---
+
+## Media (Quick Demos)
+
+Seeing the behavior first makes the rest of the technical details easier to follow:
+
+### Simulation Demo (Genesis)
+<iframe class="video"
+        src="https://www.youtube.com/embed/Dnq2HbR6G24"
+        title="Unitree Go2 — Genesis Simulation Demo"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+
+### Sim-to-Real Demo (Unitree Go2)
+<iframe class="video"
+        src="https://www.youtube.com/embed/-mpwRv5wt9U"
+        title="Unitree Go2 — Sim-to-Real Demo"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
 
 ---
 
@@ -60,6 +82,15 @@ This gives the policy an extra degree of freedom to adapt contact dynamics (soft
 ## Sim-to-Real: The “non-negotiables” I had to fix
 
 Sim-to-real initially failed in predictable ways (over-aggressive torques, timing mismatch, and nonstationary DR). These are the main fixes that made transfer realistic and stable.
+
+### What this looks like in practice
+
+If you want to map the fixes below to behavior, these two clips are the reference points:
+
+- **Simulation:** https://www.youtube.com/watch?v=Dnq2HbR6G24  
+- **Sim-to-Real:** https://www.youtube.com/watch?v=-mpwRv5wt9U  
+
+---
 
 ### 1) Torque limits + manual PD torque mode (sim2real critical)
 A pure position controller can silently demand unrealistically large torques in simulation. I switched to a **manual PD torque** computation and **clamped torques** to motor limits:
@@ -206,4 +237,20 @@ The reward is a weighted sum of:
 - **command tracking:** linear + angular velocity tracking
 - **stability penalties:** orientation, vertical velocity, base height
 - **smoothness/regularization:** action rate, dof acceleration, dof velocity
-- **gait quality:** feet air time, slip,
+- **gait quality:** feet air time, slip, foot clearance, stance quality
+- **standing behavior:** special penalties when command ≈ 0 to encourage stable standing without jitter
+
+---
+
+## Notes / Replication
+
+- Training code uses **RSL-RL** runner (`OnPolicyRunner`) with Genesis GPU backend.
+- Sim-to-real stability relies on: **torque clamping**, **delay modeling**, **curriculum gating**, and **global DR throttling**.
+- Variable stiffness (PLS) helps the policy adapt to contact uncertainty and actuation differences across sim and hardware.
+
+---
+
+## Links
+
+- **Simulation:** https://www.youtube.com/watch?v=Dnq2HbR6G24  
+- **Sim-to-Real:** https://www.youtube.com/watch?v=-mpwRv5wt9U  
