@@ -1,6 +1,6 @@
 ---
 layout: project
-title: Unitree Go2 — PPO Sim-to-Real Locomotion in Genesis
+title: Unitree Go2 — Sim-to-Real Reinforcement Learning
 order: 1
 tags: Locomotion, Reinforcement Learning, Sim-to-Real, Domain Randomization
 gif: /assets/gifs/sim_to_real.gif
