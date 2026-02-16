@@ -7,21 +7,23 @@ gif: /assets/gifs/sim_to_real.gif
 
 ## Overview
 
-This project trains a **Unitree Go2 quadruped walking policy** in **Genesis** and transfers it to the real robot using a **PPO** pipeline (RSL-RL / `rsl-rl-lib==2.2.4`). I started from a Genesis walking example and then incrementally built a sim-to-real stack:
+This project is my end-to-end attempt at **getting a Unitree Go2 to walk reliably on real hardware using an RL policy trained in simulation**.
 
-- **Domain randomization** (contact + actuation + inertial + sensor)
-- **Observation / action noise**
-- **Action latency (delay)**
-- **Curriculum learning** to recover convergence when the environment became too hard
-- **Variable stiffness control (PLS)**: the policy outputs **per-leg stiffness** in addition to joint position targets
+I started from a Genesis quadruped locomotion example and quickly hit the classic wall: **a policy that looks great in sim often fails on the real robot** because real-world dynamics are messy—latency, imperfect sensing, motor saturation, contact uncertainty, and model mismatch.
 
-The final result is a policy that can track velocity commands robustly under randomized dynamics and delayed actuation, while staying within physically plausible motor limits.
+So the project became less about “train PPO to walk” and more about **engineering a training setup that forces realism** while still converging:
+- I progressively introduced **domain randomization**, **sensor/action noise**, and **action latency**.
+- These realism knobs initially **broke convergence**.
+- I stabilized training using a **metric-gated curriculum** (difficulty adapts to agent performance).
+- Finally, I improved sim-to-real robustness by letting the policy output **variable stiffness per leg (PLS)**, not just joint targets.
+
+The result is a PPO policy that tracks velocity commands in simulation under heavy perturbations and **transfers more reliably to the real Go2**.
 
 ---
 
-## Media (Quick Demos)
+## Media (Watch First)
 
-Seeing the behavior first makes the rest of the technical details easier to follow:
+These two clips are the anchor for everything below—simulation behavior and what transfer looks like on hardware.
 
 ### Simulation Demo (Genesis)
 <iframe class="video"
@@ -41,108 +43,123 @@ Seeing the behavior first makes the rest of the technical details easier to foll
 
 ---
 
-## Training Setup (what the policy actually sees)
+## What I Built (in one sentence)
+
+A **PPO locomotion policy** trained in **Genesis** with a **sim-to-real training stack**: torque-safe control, observation consistency under latency, randomized dynamics, pushes/noise, and a **curriculum that ramps difficulty based on measurable performance**—plus **per-leg stiffness control** to improve robustness.
+
+---
+
+## Training Setup (what the policy actually experiences)
 
 ### Simulation (Genesis)
-- **Time step:** `dt = 0.02s` (50 Hz), with **substeps = 2**
+- **Time step:** `dt = 0.02s` (50 Hz), **substeps = 2**
 - **Episode length:** `20s` (≈1000 steps)
 - **Parallelization:** up to **4096 environments**
-- **Robot:** Go2 URDF in Genesis, plane ground entity with randomized friction
+- **Robot:** Go2 URDF + ground plane; friction and dynamics randomized during training
 
-### Policy + PPO (RSL-RL)
-- **Algorithm:** PPO (adaptive KL scheduling)
-- **Actor/Critic:** MLPs with `ELU`, hidden dims **[512, 256, 128]**
-- **Rollout:** `num_steps_per_env = 24`
+### PPO (RSL-RL / `rsl-rl-lib==2.2.4`)
+- **Actor/Critic:** MLPs (`ELU`) with hidden dims **[512, 256, 128]**
+- **Rollout length:** `num_steps_per_env = 24`
 - **Optimization:** `5` epochs, `4` minibatches
-- **Key PPO params:** `lr=1e-3`, `clip=0.2`, `gamma=0.99`, `lam=0.95`, `desired_kl=0.01`, `entropy_coef=0.003`
+- **Core PPO params:** `lr=1e-3`, `clip=0.2`, `gamma=0.99`, `lam=0.95`, `desired_kl=0.01`, `entropy_coef=0.003`
 
 ---
 
 ## Action Space: Joint Targets + Per-Leg Stiffness (PLS)
 
-A key sim2real improvement was extending the action space from *only* joint position targets to:
+A big part of this project is that the policy does **more than position tracking**.
 
-- **12 joint position actions** (FR/FL/RR/RL hip/thigh/calf)
-- **+4 stiffness actions** (one **Kp per leg**)
+Instead of outputting only joint position targets, the policy outputs:
 
-So total actions:
+- **12 position actions** → target joint angles for hip/thigh/calf across 4 legs  
+- **+4 stiffness actions** → one value per leg controlling **Kp** (stiffness)
+
+So the action vector is:
 - **16 actions = 12 (pos) + 4 (stiffness)**
 
-### Variable stiffness mapping (PLS)
-- Policy outputs a stiffness scalar per leg.
-- Converted into **per-leg Kp**, clamped:
-  - `Kp ∈ [10, 70]`, default `Kp=40`, action scale `20`
-- **Kd is derived automatically**:
-  - `Kd = 0.2 * sqrt(Kp)` (stable, smooth damping schedule)
+### Why stiffness helps in sim-to-real
+Real contact is unpredictable: the same foot strike can behave differently depending on surface friction, compliance, timing, and motor saturation. With PLS, the policy can choose **soft legs when uncertain** and **stiff legs when it needs authority**, which improves robustness under perturbations.
 
-This gives the policy an extra degree of freedom to adapt contact dynamics (soft vs stiff legs) under friction / mass / delay shifts — especially valuable during sim-to-real.
-
----
-
-## Sim-to-Real: The “non-negotiables” I had to fix
-
-Sim-to-real initially failed in predictable ways (over-aggressive torques, timing mismatch, and nonstationary DR). These are the main fixes that made transfer realistic and stable.
-
-### What this looks like in practice
-
-If you want to map the fixes below to behavior, these two clips are the reference points:
-
-- **Simulation:** https://www.youtube.com/watch?v=Dnq2HbR6G24  
-- **Sim-to-Real:** https://www.youtube.com/watch?v=-mpwRv5wt9U  
+Implementation details (as used in my code):
+- Kp per leg is clamped: `Kp ∈ [10, 70]`  
+- Default `Kp=40`, action scale `20`
+- Damping is derived automatically:
+  - `Kd = 0.2 * sqrt(Kp)`
 
 ---
 
-### 1) Torque limits + manual PD torque mode (sim2real critical)
-A pure position controller can silently demand unrealistically large torques in simulation. I switched to a **manual PD torque** computation and **clamped torques** to motor limits:
+## The Sim-to-Real Problem (what broke and how I fixed it)
 
-- **Torque clamp (per joint):**
-  - hip/thigh: **23.7 Nm**
-  - calf: **45.0 Nm**
+When I first enabled sim-to-real realism knobs (randomization + noise + delay), training became unstable or collapsed. The core issue was **nonstationarity** and **inconsistent control/observation semantics**.
+
+Below are the “non-negotiables” that made the setup both **realistic** and **trainable**.
+
+---
+
+## Sim-to-Real: Non-Negotiables
+
+### 1) Torque limits + manual PD torque mode (sim2real-critical)
+
+In simulation, a position controller can demand unrealistic torques without consequences. That leads to policies that “cheat” and fail immediately on hardware.
+
+To fix this, I switched to a **manual PD torque controller** and enforced **per-joint torque limits**:
+
 - PD torque:
   - `τ = Kp (q_target - q) - Kd qdot`
-- Then:
+- Torque clamp:
+  - hip/thigh: **23.7 Nm**
+  - calf: **45.0 Nm**
+- Final:
   - `τ = clamp(τ, -τ_max, τ_max)`
 
-This prevents the policy from learning “cheats” that cannot exist on hardware.
+This one change forces the policy to learn strategies that respect real motor capabilities.
 
 ---
 
-### 2) Action latency: delay buffer + correct observation of applied actions
-Real robots have delay (sensing, compute, bus, actuator). I modeled this with an **action history buffer** and per-env random delay:
+### 2) Latency modeling + observation consistency (the subtle killer)
 
-- Delay sampled per episode: **0–1 steps** (≈0–20ms at `dt=0.02`)
-- Critically, the observation includes the **applied (delayed) action**, not the instantaneous policy output.
+Real robots have delay: sensing → compute → bus → actuator. If the environment applies delayed actions but the observation shows the *non-delayed* action, training becomes inconsistent and the policy learns the wrong timing.
 
-That one detail matters: if the actor observes the wrong action, training becomes inconsistent and sim2real transfer breaks due to a timing mismatch.
+I implemented:
+- **Action history buffer** (delay line)
+- Per-episode random delay: **0–1 steps** (≈0–20ms at 50 Hz)
+- The observation contains the **applied (delayed) action**, not the raw policy output
+
+This makes the MDP consistent and improves transfer because the policy learns to act under realistic timing.
 
 ---
 
-### 3) Reward/termination/reset ordering (correct RL semantics)
-I enforced the standard “legged-gym style” step order:
+### 3) Correct termination → reward → reset ordering
 
+This is an easy bug to miss and it matters a lot once you add resets and curriculum.
+
+I enforced the standard order:
 1. check termination  
-2. compute reward on the terminal/pre-reset state  
+2. compute reward using the terminal/pre-reset state  
 3. reset environments  
 4. compute observations for the next step
 
-This removed subtle reward leakage and stabilized learning under resets and curriculum gating.
+This eliminated reward leakage and stabilized learning—especially under aggressive perturbations.
 
 ---
 
-### 4) Global parameters in Genesis: throttle to reduce nonstationarity
-Some physics parameters are effectively **global** in the Genesis scene (e.g., friction, mass shift on a single entity). If those change too frequently, training becomes extremely nonstationary.
+### 4) Throttling “global” randomization to reduce nonstationarity
 
-So I throttled global DR updates:
-- friction/mass-type global updates only every **N resets** (`global_dr_update_interval = 200`)
-- when updated, I also update the privileged obs buffers so the critic stays consistent with the current physics.
+Some Genesis parameters behave effectively **global** (e.g., friction set on the ground entity). If those parameters change too often, training becomes a moving target.
 
-This was important once DR became aggressive.
+So I throttled global DR:
+- Global updates happen only every **N resets** (`global_dr_update_interval = 200`)
+- When updated, I ensure privileged buffers stay consistent with current physics
+
+This retains realism while avoiding “training on sand”.
 
 ---
 
 ## Domain Randomization (what I randomize and why)
 
-I gradually ramp the environment from “easy” to “hard” (see curriculum section). At full difficulty, the DR suite includes:
+Once the above stability fixes were in place, I progressively enabled the full DR suite.
+
+At full difficulty, the training environment includes:
 
 ### Contact + terrain interaction
 - **Friction (global):** `μ ∈ [0.3, 1.25]`
@@ -151,72 +168,71 @@ I gradually ramp the environment from “easy” to “hard” (see curriculum s
 - **Kp/Kd per-joint factors (per-env):** `[0.8, 1.2]`
 - **Motor strength scaling (per-env):** `[0.9, 1.1]`
 
-### Inertial and morphology shifts
+### Inertial / morphology shifts
 - **Trunk mass shift (global):** `[-1.0, 3.0] kg`
 - **CoM shift (global):** `[-0.03, 0.03] m`
-- **Per-leg (hip link) mass shift (global):** `[-0.5, 0.5] kg`
+- **Per-leg hip link mass shift (global):** `[-0.5, 0.5] kg`
 
-### Sensor + command noise
-- Observation noise with structured components:
+### Sensor + action noise
+- **Observation noise components:**
   - `ang_vel`, `gravity`, `dof_pos`, `dof_vel`
-- Noise is scaled by a curriculum-controlled `obs_noise_level`
-
-### Action noise
-- Target position noise: `std = 0.1` (applied to joint targets)
+- **Action noise on target joints:** `std = 0.1`
 
 ### External disturbances
 - Random pushes:
-  - force range `[-150, 150] N`
+  - force `[-150, 150] N`
   - duration `[0.05, 0.2] s`
-  - interval ~ every `5s` at full difficulty
+  - interval around every `5s` at full difficulty
 
 ### Initialization randomization
-- Base height randomization: `z ∈ [0.38, 0.45]`
-- Base roll/pitch randomization: `±5°`
+- Base height: `z ∈ [0.38, 0.45]`
+- Base roll/pitch: `±5°`
 
 ---
 
 ## Curriculum Learning (metric-gated, not time-based)
 
-Once I added DR + noise + delay, training **stopped converging**. The fix was a **metric-gated curriculum manager** that adjusts difficulty based on performance, not iteration count.
+Adding realism made the environment harder—but “hard from day one” caused PPO collapse.
+
+So I implemented a **metric-gated curriculum manager** that adjusts difficulty based on actual competence.
 
 ### What it tracks (EMA)
 - **timeout rate**
 - **fall rate**
-- **tracking performance per second** (from tracking rewards normalized by episode time)
+- **tracking reward per second** (normalized by episode duration)
 
 ### When it increases difficulty
-It steps the curriculum level up when the agent sustains:
+Difficulty ramps up only after consistently meeting thresholds like:
 - `timeout_rate ≥ 0.80`
 - `tracking ≥ 0.75`
 - `fall_rate ≤ 0.15`
-- over a streak of multiple checks
+- sustained for a streak (not just one lucky run)
 
 ### When it decreases difficulty
-If the environment becomes too hard:
-- `fall_rate ≥ 0.25` for a short streak → decrease level
+If the agent starts failing:
+- `fall_rate ≥ 0.25` for a short streak → reduce level
 
-### Why this helped
-This curriculum prevented the classic failure mode:
-> “I turned on sim2real realism knobs and PPO collapsed.”
+### Why this matters
+This curriculum directly addresses the real sim-to-real training dilemma:
+> realism improves transfer but hurts convergence.
 
-Instead, the policy earns its way into harder physics (pushes, noise, delay, broader friction/mass ranges) only when it is ready.
+The curriculum lets the policy **earn** realism progressively.
 
 ---
 
 ## Observations: Actor vs Privileged Critic
 
-### Actor observation (what transfers to the robot)
-Concatenation of:
+### Actor observation (deployable)
+The actor gets only signals that exist on the real robot:
 - base angular velocity (scaled)
 - projected gravity vector
 - commanded velocities (x, y, yaw)
-- joint position error from default pose
+- joint position offsets from nominal pose
 - joint velocities
 - **applied (delayed) action**
 
 ### Privileged critic observation (training only)
-The critic additionally gets “hidden” DR state:
+The critic additionally sees hidden randomization state:
 - true base linear velocity
 - current friction
 - kp/kd factors
@@ -225,32 +241,36 @@ The critic additionally gets “hidden” DR state:
 - per-leg mass shifts
 - gravity offset
 - push force
-- normalized delay level
+- normalized delay
 
-This improves sample efficiency and stabilizes PPO while still learning a deployable actor.
+This improves training stability/sample efficiency without leaking unrealistic info into the deployable policy.
 
 ---
 
 ## Reward Design (high-level)
 
-The reward is a weighted sum of:
-- **command tracking:** linear + angular velocity tracking
-- **stability penalties:** orientation, vertical velocity, base height
-- **smoothness/regularization:** action rate, dof acceleration, dof velocity
-- **gait quality:** feet air time, slip, foot clearance, stance quality
-- **standing behavior:** special penalties when command ≈ 0 to encourage stable standing without jitter
+The reward is shaped to balance **command tracking**, **stability**, and **gait quality** while discouraging jitter and energy-wasting behavior:
+
+- **Tracking:** linear + angular velocity tracking
+- **Stability:** orientation penalty, base height penalty, vertical velocity penalty
+- **Smoothness:** action-rate penalty, joint accel/vel regularization
+- **Gait quality:** feet air time, foot slip, foot clearance, stance stability (especially for near-zero commands)
+
+The reward design is intentionally conservative: it pushes the policy toward behaviors that transfer and avoids fragile, overfit gaits.
 
 ---
 
-## Notes / Replication
+## Results (what I’m proud of)
 
-- Training code uses **RSL-RL** runner (`OnPolicyRunner`) with Genesis GPU backend.
-- Sim-to-real stability relies on: **torque clamping**, **delay modeling**, **curriculum gating**, and **global DR throttling**.
-- Variable stiffness (PLS) helps the policy adapt to contact uncertainty and actuation differences across sim and hardware.
+- A training setup that stays stable even after adding:
+  **randomization + noise + pushes + latency**
+- A policy that transfers better because it’s trained with:
+  **torque realism**, **timing realism**, and **progressive difficulty**
+- PLS stiffness control that improves robustness under contact uncertainty
 
 ---
 
-## Links
+## Links (for quick access)
 
 - **Simulation:** https://www.youtube.com/watch?v=Dnq2HbR6G24  
 - **Sim-to-Real:** https://www.youtube.com/watch?v=-mpwRv5wt9U  
