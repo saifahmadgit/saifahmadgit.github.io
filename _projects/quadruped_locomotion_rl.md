@@ -3,10 +3,8 @@ layout: project
 title: Unitree Go2 — Sim-to-Real Reinforcement Learning (Genesis + PPO)
 order: 1
 tags: Locomotion, Reinforcement Learning, Sim-to-Real, Domain Randomization, Curriculum Learning, Torque Control, Latency
-gif: /assets/gifs/sim_to_real.gif
+gif: /assets/gifs/sim_And_real_Omni.gif
 ---
-
-## Media (sim + real in one clip)
 
 <iframe class="video"
         src="https://www.youtube.com/embed/vyA5PE-hZUc"
