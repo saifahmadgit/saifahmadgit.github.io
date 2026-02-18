@@ -2,55 +2,30 @@
 layout: default
 ---
 
-<div class="main-grid">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
     <img class="profile-pic"
          src="{{ site.baseurl }}/assets/images/profile.jpg"
          alt="Saif Ahmad">
 
-    <h1>Saif Ahmad</h1>
-    <p class="degree">MS in Robotics</p>
-    <p class="interests">Robotics · Perception · Manipulation</p>
-    <p class="location"> Chicago, United States</p>
+    <div class="header-text">
+      <h1>Saif Ahmad</h1>
+      <p class="tagline">MS in Robotics · Perception · Manipulation</p>
+    </div>
 
-    <div class="links">
-      <a href="mailto:saif.ahmad98745@gmail.com">📧 saif.ahmad98745@gmail.com</a>
+    <nav class="header-links">
+      <a href="mailto:saif.ahmad98745@gmail.com">Email</a>
       <a href="https://github.com/saifahmadgit" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/saif-ahmad" target="_blank"> LinkedIn</a>
+      <a href="https://www.linkedin.com/in/saif-ahmad" target="_blank">LinkedIn</a>
       <a href="{{ site.baseurl }}/resume.pdf" target="_blank">Resume</a>
-    </div>
-  </aside>
+    </nav>
+  </div>
+</header>
 
-  <!-- PROJECTS -->
-  <main class="content">
-    <h2>Featured Robotics Projects</h2>
+<!-- PROJECTS -->
+<main class="content-full">
+  <h2>Featured Robotics Projects</h2>
 
-    <div class="project-grid">
-      {% assign projects_sorted = site.projects | sort: "order" %}
-      {% for project in projects_sorted %}
-        <div class="project-card">
-          <a href="{{ project.url | relative_url }}">
-            {% if project.gif %}
-              <img class="project-gif"
-                   src="{{ project.gif | relative_url }}"
-                   alt="{{ project.title }}"
-                   loading="lazy">
-            {% endif %}
-            <h3>{{ project.title }}</h3>
-          </a>
-
-          {% if project.tags %}
-            {% if project.tags.first %}
-              <p>{{ project.tags | join: ", " }}</p>
-            {% else %}
-              <p>{{ project.tags }}</p>
-            {% endif %}
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  </main>
-
-</div>
+  {{ content }}
+</main>
