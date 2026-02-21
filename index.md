@@ -7,7 +7,7 @@ title: Portfolio
 
   <!-- 1) Quadruped (top-left) -->
   <div class="project-card">
-    <a href="{{ site.baseurl }}/projects/quadruped_locomotion_rl/">
+    <a href="{{ site.baseurl }}/projects/quadruped-locomotion-rl/">
       <img src="{{ '/assets/gifs/sim_to_real.gif' | relative_url }}"
            alt="Unitree Go2 RL Locomotion"
            loading="lazy">
@@ -39,7 +39,7 @@ title: Portfolio
 
   <!-- 3) Grasp -->
   <div class="project-card">
-    <a href="{{ site.baseurl }}/projects/grasp_pose_estimation/">
+    <a href="{{ site.baseurl }}/projects/grasp-pose-estimation/">
       <img src="{{ '/assets/gifs/grasp_demo.gif' | relative_url }}"
            alt="Prompt-to-Pose Grasp Estimation"
            loading="lazy">
@@ -55,7 +55,7 @@ title: Portfolio
 
   <!-- 4) Jack -->
   <div class="project-card">
-    <a href="{{ site.baseurl }}/projects/jack_in_the_box/">
+    <a href="{{ site.baseurl }}/projects/jack-in-the-box/">
       <img src="{{ '/assets/gifs/jack_demo.gif' | relative_url }}"
            alt="Jack-in-the-Box Dynamics"
            loading="lazy">
@@ -73,7 +73,7 @@ title: Portfolio
 
   <!-- 5) Pen -->
   <div class="project-card">
-    <a href="{{ site.baseurl }}/projects/pen_catcher/">
+    <a href="{{ site.baseurl }}/projects/pen-catcher/">
       <img src="{{ '/assets/gifs/pen_demo.gif' | relative_url }}"
            alt="Pen Challenge"
            loading="lazy">
