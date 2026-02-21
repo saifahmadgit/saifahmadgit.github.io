@@ -45,10 +45,11 @@ a:hover {
 }
 
 .profile-pic {
-  width: 64px;
-  height: 64px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .header-text {
@@ -65,6 +66,26 @@ a:hover {
   margin: 4px 0 0;
   color: #555;
   font-size: 0.9rem;
+}
+
+.contact-info {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.88rem;
+  color: #444;
+}
+
+.contact-info a {
+  color: #444;
+}
+
+.nav-home {
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .header-links {
