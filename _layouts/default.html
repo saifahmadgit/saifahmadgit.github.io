@@ -9,7 +9,9 @@
 <body>
 
   <div class="container">
-    {% include navbar.html %}
+    {% unless page.hide_navbar %}
+      {% include navbar.html %}
+    {% endunless %}
     {{ content }}
   </div>
 
