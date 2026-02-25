@@ -4,9 +4,13 @@ layout: default
 
 <div class="project-page">
   <h1>{{ page.title }}</h1>
-  <p class="tags">{{ page.tags }}</p>
+
+  <div class="project-tags">
+    {% assign tag_list = page.tags | split: ", " %}
+    {% for tag in tag_list %}<span class="tag tag--page">{{ tag }}</span>{% endfor %}
+  </div>
 
   {{ content }}
 
-  <p><a href="{{ site.baseurl }}/">← Back to projects</a></p>
+  <a class="project-back" href="{{ site.baseurl }}/">← Back to projects</a>
 </div>
