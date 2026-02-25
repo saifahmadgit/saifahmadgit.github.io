@@ -2,7 +2,7 @@ title: Saif Ahmad
 description: Robotics · Perception · Manipulation
 
 url: https://saifahmadgit.github.io
-baseurl: /saifahmad.github.io
+baseurl: ""
 
 markdown: kramdown
 permalink: pretty
