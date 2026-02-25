@@ -4,6 +4,7 @@ body {
   margin: 0;
   background: #fafafa;
   color: #222;
+  font-size: 18px;
 }
 
 a {
@@ -17,9 +18,9 @@ a:hover {
 
 /* Layout */
 .container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 48px;
 }
 
 .navbar {
@@ -47,13 +48,13 @@ a:hover {
   flex-wrap: wrap;
 }
 .bio-text { flex: 1; min-width: 220px; }
-.bio-text h1 { margin: 0 0 4px; font-size: 2rem; }
-.bio-text .tagline { margin: 0 0 12px; color: #555; font-size: 0.95rem; }
-.bio-text .contact-info { margin: 8px 0 0; font-size: 0.9rem; line-height: 1.9; color: #444; }
+.bio-text h1 { margin: 0 0 6px; font-size: 2.6rem; }
+.bio-text .tagline { margin: 0 0 16px; color: #555; font-size: 1.05rem; }
+.bio-text .contact-info { margin: 8px 0 0; font-size: 1rem; line-height: 2; color: #444; }
 .bio-text .contact-info a { color: #444; }
 .bio-photo {
-  width: 200px;
-  height: 200px;
+  width: 260px;
+  height: 260px;
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
@@ -75,7 +76,7 @@ a:hover {
   align-items: flex-start;
   background: #eaecf4;
   border-radius: 8px;
-  padding: 20px;
+  padding: 28px;
 }
 .project-media {
   flex: 0 0 38%;
@@ -89,9 +90,9 @@ a:hover {
   display: block;
 }
 .project-info { flex: 1; min-width: 0; }
-.project-info p { margin: 0 0 8px; font-size: 0.9rem; line-height: 1.6; }
-.project-info strong { font-size: 1rem; }
-.project-info em { color: #555; font-size: 0.85rem; }
+.project-info p { margin: 0 0 10px; font-size: 1rem; line-height: 1.65; }
+.project-info strong { font-size: 1.1rem; }
+.project-info em { color: #555; font-size: 0.95rem; }
 
 /* Project page */
 .project-page iframe {
