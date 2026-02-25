@@ -1,7 +1,6 @@
 ---
 layout: home
 title: Portfolio
-hide_navbar: true
 ---
 
 <!-- 1) Quadruped -->

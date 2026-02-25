@@ -49,9 +49,8 @@ a:hover {
 .bio-text { flex: 1; min-width: 220px; }
 .bio-text h1 { margin: 0 0 4px; font-size: 2rem; }
 .bio-text .tagline { margin: 0 0 12px; color: #555; font-size: 0.95rem; }
-.bio-text .bio { margin: 0 0 12px; font-size: 0.95rem; line-height: 1.6; }
-.bio-links { font-size: 0.9rem; }
-.bio-links a { color: #222; margin-right: 2px; }
+.bio-text .contact-info { margin: 8px 0 0; font-size: 0.9rem; line-height: 1.9; color: #444; }
+.bio-text .contact-info a { color: #444; }
 .bio-photo {
   width: 200px;
   height: 200px;
