@@ -106,7 +106,7 @@ a:hover {
 
 /* Project page */
 .project-page {
-  max-width: 820px;
+  max-width: 100%;
 }
 
 .project-page h1 {
