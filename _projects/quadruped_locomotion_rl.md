@@ -16,8 +16,6 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
 
 <img src="{{ '/assets/images/workflow.png' | relative_url }}" alt="Training and deployment workflow" style="width:65%;display:block;margin:16px auto;border-radius:8px;">
 
-<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;border-radius:8px;margin:16px 0;">
-
 The pipeline runs in three stages:
 
 **1. Genesis simulation** — 4096 parallel environments generate rollouts. The PPO **actor** receives only proprioceptive observations available on hardware. The **critic** additionally sees privileged ground-truth quantities (friction, true velocity, mass, push forces, terrain heights) that cannot be measured at deployment. This asymmetric actor–critic design lets the critic guide value estimation during training while keeping the actor deployable with sensors that actually exist on the robot.
@@ -25,6 +23,18 @@ The pipeline runs in three stages:
 **2. Qualitative evaluation in sim** — Before deploying, the policy is stress-tested at increasing difficulty: friction sweeps, observation and action noise, control latency, external push forces, dynamic payload, and stair heights. Convergence is monitored through TensorBoard — reward saturation, adaptive learning-rate decay, and entropy reduction all confirm the policy has converged.
 
 **3. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
+
+**Policy lineage**
+
+Three checkpoints form the deployment chain. **walk.pt** is the stable omnidirectional walking policy trained from scratch on flat terrain with full DR and curriculum. **walk2** is fine-tuned from walk.pt on uneven terrain to improve robustness to surface variation — this is the policy deployed on the real robot for walking. The **stair policy** is also initialized from walk.pt (not walk2) and fine-tuned on the stair heightfield curriculum; it is deployed separately for stair climbing.
+
+### Reinforcement Learning: PPO Actor-Critic
+
+Standard PPO trains a single network that sees all available information. For sim-to-real transfer this creates a problem: the simulator knows things the real robot cannot measure — exact friction, true base velocity, current mass distribution, applied push forces. If the policy learns to depend on any of these, it will fail at deployment.
+
+The solution is an **asymmetric actor-critic**. The actor is constrained to only the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action). The critic, which exists only during training to estimate value, receives the full privileged state on top of the actor observations. This lets the critic provide accurate value targets that guide the actor toward good behavior — without the actor ever seeing information it will not have on the robot.
+
+<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;border-radius:8px;margin:16px 0;">
 
 ## Part I — Omnidirectional Walking
 
@@ -184,7 +194,7 @@ Stair climbing introduces challenges absent on flat ground: the base must pitch 
 
 The actor uses the same **49-dimensional observation** as the walking policy: no height information. The **critic**, used only during training, additionally receives a **height scan** of 11 × 7 = 77 sample points in the body frame (±0.5 m forward/backward, ±0.3 m lateral). This gives the critic terrain context to guide value estimation, without making that information a dependency of the deployable actor.
 
-The stair policy is **initialized from the pre-trained walking checkpoint** and fine-tuned on stair terrain at a lower learning rate (3 × 10⁻⁴), appropriate for transfer learning.
+The stair policy is **initialized from walk.pt** — the stable flat-terrain walking checkpoint — and fine-tuned on the stair heightfield at a lower learning rate (3 × 10⁻⁴), appropriate for transfer learning. Starting from walk.pt rather than from scratch cuts the time needed to reach competence on low stairs, since the walking gait provides a strong initialization for the leg coordination patterns required for climbing.
 
 ### Terrain Curriculum
 
