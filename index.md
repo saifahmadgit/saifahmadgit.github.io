@@ -7,7 +7,7 @@ title: Portfolio
 <div class="project-row">
   <div class="project-media">
     <a href="{{ site.baseurl }}/projects/quadruped-locomotion-rl/">
-      <img src="{{ '/assets/gifs/sim_to_real.gif' | relative_url }}" alt="Unitree Go2 RL Locomotion" loading="lazy">
+      <img src="{{ '/assets/gifs/Stairs.gif' | relative_url }}" alt="Unitree Go2 RL Locomotion" loading="lazy">
     </a>
   </div>
   <div class="project-info">
