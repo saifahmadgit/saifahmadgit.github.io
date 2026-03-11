@@ -34,7 +34,7 @@ Standard PPO trains a single network that sees all available information. For si
 
 The solution is an **asymmetric actor-critic**. The actor is constrained to only the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action). The critic, which exists only during training to estimate value, receives the full privileged state on top of the actor observations. This lets the critic provide accurate value targets that guide the actor toward good behavior — without the actor ever seeing information it will not have on the robot.
 
-<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;border-radius:8px;margin:16px 0;">
+<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:55%;display:block;margin:16px auto;border-radius:8px;">
 
 ## Part I — Omnidirectional Walking
 
