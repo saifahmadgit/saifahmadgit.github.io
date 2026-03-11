@@ -14,9 +14,9 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
 
 ## Workflow
 
-<img src="{{ '/assets/images/workflow.png' | relative_url }}" alt="Training and deployment workflow" style="width:100%;border-radius:8px;margin:16px 0;">
+<img src="{{ '/assets/images/workflow.png' | relative_url }}" alt="Training and deployment workflow" style="width:65%;display:block;margin:16px auto;border-radius:8px;">
 
-<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;max-width:720px;border-radius:8px;margin:16px 0;">
+<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;border-radius:8px;margin:16px 0;">
 
 The pipeline runs in three stages:
 
