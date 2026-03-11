@@ -1,6 +1,6 @@
 ---
 layout: project
-title: Unitree Go2 — PPO Sim-to-Real Locomotion
+title: Unitree Go2 PPO Sim-to-Real Locomotion
 order: 1
 tags: Reinforcement Learning, Genesis Simulation, Sim-to-Real, Domain Randomization, Curriculum Learning, Per-Leg Stiffness
 gif: /assets/gifs/sim_to_real.gif
@@ -10,19 +10,35 @@ gif: /assets/gifs/sim_to_real.gif
 
 This project trains **PPO locomotion policies** in the **Genesis** physics simulator and deploys them on a real **Unitree Go2** quadruped. In simulation, four behaviors were developed: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**. Of these, walking and stair climbing have been successfully transferred to hardware using only proprioceptive sensing — no camera or LiDAR.
 
-The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness. The overall approach is inspired by [Extreme Parkour](https://extreme-parkour.github.io/); the per-leg stiffness formulation follows [arXiv 2502.09436](https://arxiv.org/abs/2502.09436).
+The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
+
+## Inspirations
+
+- **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)** — overall sim-to-real training framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
+- **[Variable Stiffness for Robust Locomotion through RL (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)** — per-leg stiffness formulation and the Kd = 0.2 × √Kp relationship
+
+## Code
+
+Both repositories are forks — this work builds on top of existing infrastructure with significant modifications for the training pipeline and deployment stack.
+
+| Component | Repository |
+|---|---|
+| Training (Genesis + PPO) | [saifahmadgit/quadruped\_locomotion\_UnitreeGo2\_RL](https://github.com/saifahmadgit/quadruped_locomotion_UnitreeGo2_RL) |
+| Deployment (Unitree Python SDK) | [saifahmadgit/go2-sim2real-deploy](https://github.com/saifahmadgit/go2-sim2real-deploy) |
 
 ## Workflow
 
 <img src="{{ '/assets/images/workflow.png' | relative_url }}" alt="Training and deployment workflow" style="width:65%;display:block;margin:16px auto;border-radius:8px;">
 
-The pipeline runs in three stages:
+The pipeline runs in four stages, with explicit feedback loops guiding iteration (see diagram above):
 
 **1. Genesis simulation** — 4096 parallel environments generate rollouts. The PPO **actor** receives only proprioceptive observations available on hardware. The **critic** additionally sees privileged ground-truth quantities (friction, true velocity, mass, push forces, terrain heights) that cannot be measured at deployment. This asymmetric actor–critic design lets the critic guide value estimation during training while keeping the actor deployable with sensors that actually exist on the robot.
 
-**2. Qualitative evaluation in sim** — Before deploying, the policy is stress-tested at increasing difficulty: friction sweeps, observation and action noise, control latency, external push forces, dynamic payload, and stair heights. Convergence is monitored through TensorBoard — reward saturation, adaptive learning-rate decay, and entropy reduction all confirm the policy has converged.
+**2. Convergence check via TensorBoard** — After training, reward curves, entropy, and learning-rate decay are inspected in TensorBoard to assess whether the policy has converged. In practice, convergence is not guaranteed: rewards sometimes plateau prematurely or begin decreasing, indicating instability or a reward shaping issue. When this happens, training is revised (reward weights, curriculum thresholds, DR ranges) and restarted from step 1. If convergence is partial but the intermediate checkpoint already shows promising behavior, that checkpoint is carried forward to qualitative evaluation rather than waiting for full convergence.
 
-**3. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
+**3. Qualitative stress testing in sim** — A converged (or sufficiently good) policy is visually inspected in simulation. This is a deliberate qualitative assessment: does the gait look natural? Does the robot recover from pushes? Does it handle friction extremes and payload changes without collapsing? The policy is subjected to friction sweeps, observation and action noise, control latency, external push impulses, dynamic payload, and stair heights. If the behavior looks wrong — unstable footfall, unnatural posture, poor recovery — training is revised and the loop restarts from step 1. Only a policy that passes visual inspection moves forward.
+
+**4. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
 
 **Policy lineage**
 
@@ -303,5 +319,5 @@ In practice the gap persists in subtle ways. Successful policies achieve the goa
 
 ## References
 
-- [Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/) — inspiration for the overall sim-to-real training framework
-- [Variable Stiffness for Robust Locomotion through RL (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436) — per-leg stiffness formulation and Kd = 0.2 × √Kp formula
+- [Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)
+- [Variable Stiffness for Robust Locomotion through RL (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)
