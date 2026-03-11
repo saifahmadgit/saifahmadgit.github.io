@@ -8,15 +8,15 @@ gif: /assets/gifs/sim_to_real.gif
 
 ## Overview
 
-This project trains **PPO locomotion policies** in the **Genesis** physics simulator and deploys them on a real **Unitree Go2** quadruped. Two capabilities were developed: **omnidirectional walking** on flat terrain and **stair climbing** on steps up to 15 cm — both transferred to hardware using only proprioceptive sensing (no camera or LiDAR).
+This project trains **PPO locomotion policies** in the **Genesis** physics simulator and deploys them on a real **Unitree Go2** quadruped. In simulation, four behaviors were developed: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**. Of these, walking and stair climbing have been successfully transferred to hardware using only proprioceptive sensing — no camera or LiDAR.
 
-The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through torque-realistic control, domain randomization, latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness. The overall approach is inspired by [Extreme Parkour](https://extreme-parkour.github.io/); the per-leg stiffness formulation follows [arXiv 2502.09436](https://arxiv.org/abs/2502.09436).
-
----
+The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness. The overall approach is inspired by [Extreme Parkour](https://extreme-parkour.github.io/); the per-leg stiffness formulation follows [arXiv 2502.09436](https://arxiv.org/abs/2502.09436).
 
 ## Workflow
 
 <img src="{{ '/assets/images/workflow.png' | relative_url }}" alt="Training and deployment workflow" style="width:100%;border-radius:8px;margin:16px 0;">
+
+<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;max-width:720px;border-radius:8px;margin:16px 0;">
 
 The pipeline runs in three stages:
 
@@ -25,8 +25,6 @@ The pipeline runs in three stages:
 **2. Qualitative evaluation in sim** — Before deploying, the policy is stress-tested at increasing difficulty: friction sweeps, observation and action noise, control latency, external push forces, dynamic payload, and stair heights. Convergence is monitored through TensorBoard — reward saturation, adaptive learning-rate decay, and entropy reduction all confirm the policy has converged.
 
 **3. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
-
----
 
 ## Part I — Omnidirectional Walking
 
@@ -60,82 +58,27 @@ Training runs in **Genesis** with 4096 parallel environments. The PPO implementa
 
 The policy outputs **16 actions**: 12 joint position targets (hip/thigh/calf × 4 legs) plus 4 per-leg stiffness scalars. Per-leg stiffness is described in the PLS section.
 
-**Observation space**
-
-<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:100%;max-width:720px;border-radius:8px;margin:16px 0;">
-
-The actor uses only signals available on hardware:
-
-| Signal | Dim |
-|---|---|
-| Angular velocity — IMU gyroscope | 3 |
-| Projected gravity vector | 3 |
-| Velocity commands [vx, vy, ωz] | 3 |
-| Joint position offsets (q − q_default) | 12 |
-| Joint velocities dq | 12 |
-| Last applied action (12 pos + 4 stiffness) | 16 |
-| **Total actor obs** | **49** |
-
-The critic additionally receives privileged information:
-
-| Signal | Dim |
-|---|---|
-| True base linear velocity | 3 |
-| Ground friction | 1 |
-| Per-joint Kp / Kd factors | 24 |
-| Motor strength | 12 |
-| Trunk mass shift | 1 |
-| CoM shift | 3 |
-| Per-leg hip mass shift | 4 |
-| Gravity offset | 3 |
-| External push force | 3 |
-| Action delay (normalized) | 1 |
-| **Total privileged extras** | **55** |
-
 **Simulation videos**
 
 <div style="background:#eaecf4;border-radius:8px;padding:32px;text-align:center;margin:24px 0;color:#666;font-style:italic;">
   [Video placeholder — Genesis simulation: omnidirectional walking]
 </div>
 
----
-
 ### First Sim-to-Real Attempt
 
 The baseline policy — trained with clean observations, zero latency, and fixed dynamics — learns a stable walk in simulation. On hardware it fails within seconds: the robot struggles to balance, overshoots joint targets, and falls.
 
-Two root causes drive the failure:
-
-**Torque realism** — The simulator applies any commanded torque without limit. Real actuators saturate. A policy that depends on high peak torques cannot execute the same strategy on the Go2.
-
-**Timing and sensing** — Real control loops have bus latency, joint encoder quantization, and IMU noise. A policy trained on clean zero-latency observations experiences a very different world on hardware.
+The failure comes down to the fact that the simulator presents a fundamentally different world from the real robot. There is no sensor noise, no control delay, and dynamics are fixed across every episode. A policy that has only ever seen a clean, perfectly consistent environment cannot cope with the variability it encounters on hardware — noisy IMU readings, encoder quantization, bus latency between command and execution, and surface friction it has never been exposed to.
 
 <div style="background:#eaecf4;border-radius:8px;padding:32px;text-align:center;margin:24px 0;color:#666;font-style:italic;">
   [Video placeholder — first deployment attempt: failure on real Go2]
 </div>
 
----
-
 ### Closing the Gap
 
-Four engineering additions close the gap, introduced sequentially.
+Three engineering additions close the gap, introduced sequentially.
 
-#### 1. Torque-Realistic Control
-
-Before any randomization, the control stack is corrected. Torques are computed explicitly via a manual PD law and hard-clamped to hardware limits:
-
-τ = Kp(q_target − q) − Kd · dq
-τ ← clip(τ, −τ_max, +τ_max)
-
-| Joint | Limit |
-|---|---|
-| Hip | 23.7 Nm |
-| Thigh | 23.7 Nm |
-| Calf | 45.0 Nm |
-
-This prevents the policy from learning strategies that are physically impossible on hardware.
-
-#### 2. Domain Randomization (DR)
+#### 1. Domain Randomization (DR)
 
 DR makes the real robot a member of the training distribution. Parameters are randomized from easy settings at curriculum level 0 up to hard ceilings at level 1.0.
 
@@ -158,15 +101,13 @@ DR makes the real robot a member of the training distribution. Parameters are ra
 
 **Non-stationarity control:** global parameters (friction, mass, CoM) are re-randomized only every 200 resets — not every episode — to prevent the simulator from behaving like a moving target during a PPO rollout.
 
-#### 3. Sensor Noise and Control Latency
+#### 2. Sensor Noise and Control Latency
 
 Gaussian noise is injected into every observation at each step. Control latency is modeled as a delay buffer of 0–1 steps (matching the Go2 bus delay at 50 Hz). Critically, the **observation fed back to the policy includes the delayed action that was actually applied** — not the most recently computed action. This keeps the MDP internally consistent and prevents the policy from reasoning about actions it has not yet executed.
 
-#### 4. External Push Forces
+#### 3. External Push Forces
 
 Random impulses (±150 N, 0.05–0.2 s duration, every 5 s) are applied to the base. This builds disturbance rejection that is essential when the robot encounters unexpected contacts on real terrain.
-
----
 
 ### Convergence Issues → Metric-Gated Curriculum
 
@@ -184,8 +125,6 @@ Level changes are asymmetric: **+0.01 up, −0.03 down** — the policy retreats
 
 **Curriculum mixing** keeps training anchored: 80 % of environments sample the current difficulty level; the remaining 20 % sample from a lower band [0.0, 0.5]. This prevents the policy from forgetting easier behaviors as it pushes the frontier upward.
 
----
-
 ### Per-Leg Stiffness (PLS)
 
 Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy outputs a **stiffness scalar per leg** in addition to joint position targets. Damping is derived from stiffness by a fixed formula:
@@ -201,8 +140,6 @@ Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy out
 | Kp range (deployment) | [20, 60] Nm/rad |
 
 **Why PLS helps:** during locomotion, the **stance leg** needs high stiffness to support body weight and resist perturbations; the **swing leg** benefits from lower stiffness to absorb contact impulses. Fixed Kp/Kd cannot express this timing-dependent compliance. With PLS the policy learns, emergently, to stiffen a leg during stance and soften it during swing. PLS also reduces brittle manual gain tuning — stiffness becomes a policy output, not a fixed hyperparameter, and it generalizes across surfaces.
-
----
 
 ### Reward Function (Walking)
 
@@ -226,8 +163,6 @@ Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy out
 | stand_still_vel | −2.0 | Penalize velocity when commands ≈ 0 |
 | feet_stance | −0.3 | Encourage proper stance timing |
 
----
-
 ### Results — Omnidirectional Walking
 
 The policy achieves robust omnidirectional locomotion: forward/backward, lateral stepping, and yaw rotation. Transfer to hardware is successful — the robot walks reliably on indoor floors, transitions between surfaces, and recovers from external pushes.
@@ -241,8 +176,6 @@ The policy achieves robust omnidirectional locomotion: forward/backward, lateral
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
----
-
 ## Part II — Stair Climbing
 
 ### Approach
@@ -252,8 +185,6 @@ Stair climbing introduces challenges absent on flat ground: the base must pitch 
 The actor uses the same **49-dimensional observation** as the walking policy: no height information. The **critic**, used only during training, additionally receives a **height scan** of 11 × 7 = 77 sample points in the body frame (±0.5 m forward/backward, ±0.3 m lateral). This gives the critic terrain context to guide value estimation, without making that information a dependency of the deployable actor.
 
 The stair policy is **initialized from the pre-trained walking checkpoint** and fine-tuned on stair terrain at a lower learning rate (3 × 10⁻⁴), appropriate for transfer learning.
-
----
 
 ### Terrain Curriculum
 
@@ -280,8 +211,6 @@ The curriculum starts at **level 0.65** (row ~8 of 13) because the walking polic
 
 **Spawn distribution** uses a 40 % frontier / 30 % near-frontier / 30 % easy split to balance exploration of harder rows with consolidation of learned skills.
 
----
-
 ### Reward Changes for Stairs
 
 Several reward terms are modified from the walking policy to accommodate stair-specific behavior:
@@ -301,8 +230,6 @@ Commands during stair training are **forward-only** (no lateral, no yaw) — the
 
 **Two-phase DR schedule:** stair learning and DR are decoupled. During Phase 1 (terrain curriculum level < 0.5), DR is capped at level 0.15 so the robot can focus on the novel task without simultaneous dynamics disturbance. Once the policy handles mid-difficulty stairs (Phase 2), DR ramps up to the full ceiling for robustness.
 
----
-
 ### Results — Stair Climbing
 
 <img src="{{ '/assets/gifs/Stairs.gif' | relative_url }}" alt="Stair climbing in Genesis simulation" style="width:100%;border-radius:8px;margin:16px 0;">
@@ -319,8 +246,6 @@ The blind policy transfers to the real staircase (39 cm tread, ~15 cm riser) usi
   [Video placeholder — stair climbing on real Go2]
 </div>
 
----
-
 ## Deployment Details
 
 ### Dual-Frequency Control Loop
@@ -329,7 +254,7 @@ Two threads run simultaneously during deployment:
 
 | Thread | Frequency | Role |
 |---|---|---|
-| Policy thread | 50 Hz | Read IMU + joints → build obs → run actor → compute targets |
+| Policy thread | 50 Hz | Read IMU + joints, build obs, run actor, compute targets |
 | LowCmd writer | 500 Hz | Stream joint position + Kp/Kd commands over DDS |
 
 The policy runs at 50 Hz (matching the simulation control frequency); the 500 Hz writer saturates the Go2's native LowCmd protocol for smooth motor control.
@@ -354,8 +279,6 @@ final_Kd = network_Kd × KD_FACTOR
 
 KP_FACTOR = 1.0 by default. Increasing it stiffens the robot; decreasing it softens it. This is particularly useful because the same Kp/Kd values produce different joint behavior in sim and on hardware — the runtime factor provides a one-knob adjustment without retraining.
 
----
-
 ## Conclusions and Future Work
 
 The sim-to-real gap is inherent: no simulator fully captures actuator compliance, contact mechanics, or real-world sensor characteristics. Domain randomization addresses this by making the real robot a member of the training distribution — rather than matching sim to reality exactly, it makes reality a subset of the simulated variations.
@@ -367,8 +290,6 @@ In practice the gap persists in subtle ways. Successful policies achieve the goa
 - **System identification for actuators** — fitting simulator actuator parameters to real motor response (frequency response, current-to-torque mapping) would substantially reduce the PD gain mismatch that is currently compensated by the KP_FACTOR deployment knob
 - **Exteroceptive sensing** — adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
 - **Online adaptation** — an RMA-style adaptation module could estimate real-world parameter shifts (payload, surface friction) at deployment and feed a compact latent into the actor, bridging the remaining gap without retraining
-
----
 
 ## References
 
