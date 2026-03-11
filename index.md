@@ -11,7 +11,7 @@ title: Portfolio
     </a>
   </div>
   <div class="project-info">
-    <p><a href="{{ site.baseurl }}/projects/quadruped-locomotion-rl/"><strong>Unitree Go2 — PPO Sim-to-Real Locomotion</strong></a></p>
+    <p><a href="{{ site.baseurl }}/projects/quadruped-locomotion-rl/"><strong>Unitree Go2 Reinforcement Learning (PPO) Sim-to-Real Locomotion</strong></a></p>
     <p class="project-tags"><span class="tag">Reinforcement Learning</span><span class="tag">Genesis Simulation</span><span class="tag">Sim-to-Real Transfer</span></p>
     <p>A PPO-based locomotion policy trained in Genesis simulation and deployed on a real Unitree Go2, using curriculum learning and domain randomization to close the sim-to-real gap across torque saturation, sensor noise, and terrain variability.</p>
     <p><a href="https://github.com/saifahmadgit/quadruped_locomotion_UnitreeGo2_RL" target="_blank" rel="noopener">GitHub ↗</a></p>

@@ -1,6 +1,6 @@
 ---
 layout: project
-title: Unitree Go2 PPO Sim-to-Real Locomotion
+title: Unitree Go2 Reinforcement Learning (PPO) Sim-to-Real Locomotion
 order: 1
 tags: Reinforcement Learning, Genesis Simulation, Sim-to-Real, Domain Randomization, Curriculum Learning, Per-Leg Stiffness
 gif: /assets/gifs/sim_to_real.gif
@@ -14,8 +14,8 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
 
 ## Inspirations
 
-- **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)** — overall sim-to-real training framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
-- **[Variable Stiffness for Robust Locomotion through RL (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)** — per-leg stiffness formulation and the Kd = 0.2 × √Kp relationship
+- **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)** — overall sim-to-real reinforcement learning framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
+- **[Variable Stiffness for Robust Locomotion through Reinforcement Learning (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)** — per-leg adaptive stiffness formulation (Kd = 0.2 × √Kp), and domain randomization parameter ranges for friction, mass, motor gains, and external push forces
 
 ## Code
 
@@ -23,7 +23,7 @@ Both repositories are forks — this work builds on top of existing infrastructu
 
 | Component | Repository |
 |---|---|
-| Training (Genesis + PPO) | [saifahmadgit/quadruped\_locomotion\_UnitreeGo2\_RL](https://github.com/saifahmadgit/quadruped_locomotion_UnitreeGo2_RL) |
+| Reinforcement Learning Training (Genesis + PPO) | [saifahmadgit/quadruped\_locomotion\_UnitreeGo2\_RL](https://github.com/saifahmadgit/quadruped_locomotion_UnitreeGo2_RL) |
 | Deployment (Unitree Python SDK) | [saifahmadgit/go2-sim2real-deploy](https://github.com/saifahmadgit/go2-sim2real-deploy) |
 
 ## Workflow
