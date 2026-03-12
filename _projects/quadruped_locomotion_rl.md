@@ -70,14 +70,14 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 
 **2. Convergence check via TensorBoard**: After training, reward curves, entropy, and learning-rate decay are inspected in TensorBoard to assess whether the policy has converged. In practice, convergence is not guaranteed: as domain randomization difficulty ramps up, the reward keeps oscillating — the policy adapts to a harder distribution and transiently drops before recovering. This instability increases further as sensor noise, control latency, and external push forces are introduced incrementally; each addition widens the effective training distribution and causes another round of oscillation before the policy settles. When rewards plateau prematurely or collapse entirely, training is revised (reward weights, curriculum thresholds, DR ranges) and restarted from step 1. If convergence is partial but the intermediate checkpoint already shows promising behavior, that checkpoint is carried forward to qualitative evaluation rather than waiting for full convergence.
 
-<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;">
-  <figure style="flex:1;min-width:260px;margin:0;text-align:center;">
+<div style="display:flex;gap:32px;flex-wrap:wrap;margin:16px 0;justify-content:center;">
+  <figure style="width:45%;margin:0;text-align:center;">
     <img src="{{ '/assets/images/walk_train.png' | relative_url }}" alt="Training reward curve" style="width:100%;border-radius:6px;">
-    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Training reward over iterations — oscillations visible as DR difficulty increases</figcaption>
+    <figcaption style="font-size:2.1rem;color:#555;margin-top:8px;">Training reward over iterations — oscillations visible as DR difficulty increases</figcaption>
   </figure>
-  <figure style="flex:1;min-width:260px;margin:0;text-align:center;">
+  <figure style="width:45%;margin:0;text-align:center;">
     <img src="{{ '/assets/images/walk_entropy.png' | relative_url }}" alt="Policy entropy curve" style="width:100%;border-radius:6px;">
-    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Policy entropy over training — entropy decay indicates increasing policy confidence</figcaption>
+    <figcaption style="font-size:2.1rem;color:#555;margin-top:8px;">Policy entropy over training — entropy never comes down to zero but oscillates in a range, reflecting the ongoing difficulty of the training distribution</figcaption>
   </figure>
 </div>
 
@@ -337,6 +337,7 @@ In practice the gap persists in subtle ways. Successful policies achieve the goa
 - **System identification for actuators**: fitting simulator actuator parameters to real motor response (frequency response, current-to-torque mapping) would substantially reduce the PD gain mismatch that is currently compensated by the KP_FACTOR deployment knob
 - **Exteroceptive sensing**: adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
 - **High-level policy**: a hierarchical controller that uses LiDAR or camera perception to select between low-level locomotion policies (e.g. switching from flat-ground walking to stair-climbing mode upon detecting stairs)
+- **Sample efficiency**: the current pipeline trains with 4096 parallel environments for up to 10,000 iterations, which works but is not particularly efficient. Improving sample efficiency — through better reward shaping, off-policy methods, or more principled curriculum design — was not a focus of this work and remains an open direction
 
 ## Slides
 
