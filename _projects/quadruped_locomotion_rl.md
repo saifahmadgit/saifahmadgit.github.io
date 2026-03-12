@@ -12,6 +12,13 @@ This project trains **PPO locomotion policies** in the **Genesis** physics simul
 
 The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
 
+<iframe class="video"
+        src="https://www.youtube.com/embed/fUJIFljTWT8"
+        title="Unitree Go2 — Project Overview"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+
 ## Inspirations
 
 - **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)** — overall sim-to-real reinforcement learning framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
@@ -53,6 +60,13 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 **3. Qualitative stress testing in sim** — A converged (or sufficiently good) policy is visually inspected in simulation. This is a deliberate qualitative assessment: does the gait look natural? Does the robot recover from pushes? Does it handle friction extremes and payload changes without collapsing? The policy is subjected to friction sweeps, observation and action noise, control latency, external push impulses, dynamic payload, and stair heights. If the behavior looks wrong — unstable footfall, unnatural posture, poor recovery — training is revised and the loop restarts from step 1. Only a policy that passes visual inspection moves forward.
 
 **4. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
+
+<iframe class="video"
+        src="https://www.youtube.com/embed/UsnEFw2Oe-0"
+        title="Unitree Go2 — Stress Test in Simulation"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
 
 **Policy lineage**
 
@@ -212,6 +226,13 @@ The policy achieves robust omnidirectional locomotion: forward/backward, lateral
 <iframe class="video"
         src="https://www.youtube.com/embed/vyA5PE-hZUc"
         title="Unitree Go2 — Sim + Real Omnidirectional Walking"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+
+<iframe class="video"
+        src="https://www.youtube.com/embed/Nv_mxngRGLE"
+        title="Unitree Go2 — Omnidirectional Walking Demo"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
