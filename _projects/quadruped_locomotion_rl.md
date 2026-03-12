@@ -15,7 +15,7 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
 ## Stair Climb
 
 <iframe class="video"
-        style="aspect-ratio:16/9.95;"
+        style="aspect-ratio:16/8.46;"
         src="https://www.youtube.com/embed/fUJIFljTWT8"
         title="Unitree Go2 - Project Overview"
         frameborder="0"
@@ -25,7 +25,7 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
 ## Walking
 
 <iframe class="video"
-        style="aspect-ratio:16/9.95;"
+        style="aspect-ratio:16/8.46;"
         src="https://www.youtube.com/embed/Nv_mxngRGLE"
         title="Unitree Go2 - Omnidirectional Walking Demo"
         frameborder="0"
@@ -62,7 +62,7 @@ Both repositories are forks; this work builds on top of existing infrastructure 
 
 ## Workflow
 
-<img src="{{ '/assets/images/workflow.png' | relative_url }}" alt="Training and deployment workflow" style="width:65%;display:block;margin:16px auto;border-radius:8px;">
+<img src="{{ '/assets/images/blockDiagram.png' | relative_url }}" alt="Training and deployment workflow" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
 
 The pipeline runs in four stages, with explicit feedback loops guiding iteration (see diagram above):
 
@@ -77,7 +77,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 ## Stress Test in Simulation
 
 <iframe class="video"
-        style="width:60%;"
+        style="width:72%;"
         src="https://www.youtube.com/embed/UsnEFw2Oe-0"
         title="Unitree Go2 - Stress Test in Simulation"
         frameborder="0"
@@ -87,7 +87,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 ## Deployment Trials and Improvement
 
 <iframe class="video"
-        style="width:60%;"
+        style="width:72%;"
         src="https://www.youtube.com/embed/DeX5ISVCREw"
         title="Unitree Go2 - Deployment Trials and Improvement"
         frameborder="0"
@@ -99,8 +99,6 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 Standard PPO trains a single network that sees all available information. For sim-to-real transfer this creates a problem: the simulator knows things the real robot cannot measure: exact friction, true base velocity, current mass distribution, applied push forces. If the policy learns to depend on any of these, it will fail at deployment.
 
 The solution is an **asymmetric actor-critic**. The actor is constrained to only the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action). The critic, which exists only during training to estimate value, receives the full privileged state on top of the actor observations. This lets the critic provide accurate value targets that guide the actor toward good behavior, without the actor ever seeing information it will not have on the robot.
-
-<img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:55%;display:block;margin:16px auto;border-radius:8px;">
 
 ## Part I: Omnidirectional Walking
 
