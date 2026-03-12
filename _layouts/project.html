@@ -6,7 +6,7 @@ layout: default
   <h1>{{ page.title }}</h1>
 
   <div class="project-tags">
-    {% assign tag_list = page.tags | split: ", " %}
+    {% assign tag_list = page.tech_tags | split: ", " %}
     {% for tag in tag_list %}<span class="tag tag--page">{{ tag }}</span>{% endfor %}
   </div>
 

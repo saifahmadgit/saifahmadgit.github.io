@@ -2,7 +2,7 @@
 layout: project
 title: Unitree Go2 Reinforcement Learning (PPO) Sim-to-Real Locomotion
 order: 1
-tags: "Reinforcement Learning (PPO), Sim-to-Real, Genesis"
+tech_tags: "Reinforcement Learning (PPO), Sim-to-Real, Genesis"
 gif: /assets/gifs/sim_to_real.gif
 ---
 
@@ -134,7 +134,6 @@ Training runs in **Genesis** with 4096 parallel environments. The PPO implementa
 
 The policy outputs **16 actions**: 12 joint position targets (hip/thigh/calf × 4 legs) plus 4 per-leg stiffness scalars. Per-leg stiffness is described in the Per-Leg Stiffness section.
 
-**Simulation videos**
 
 ### First Sim-to-Real Attempt
 
