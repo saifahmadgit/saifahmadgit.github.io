@@ -69,6 +69,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 **4. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
 
 <iframe class="video"
+        style="width:60%;"
         src="https://www.youtube.com/embed/UsnEFw2Oe-0"
         title="Unitree Go2 — Stress Test in Simulation"
         frameborder="0"
