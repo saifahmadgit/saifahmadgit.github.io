@@ -78,6 +78,14 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
+<iframe class="video"
+        style="width:60%;"
+        src="https://www.youtube.com/embed/DeX5ISVCREw"
+        title="Unitree Go2 — Additional Demo"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+
 **Policy lineage**
 
 Three checkpoints form the deployment chain. **walk.pt** is the stable omnidirectional walking policy trained from scratch on flat terrain with full DR and curriculum. **walk2** is fine-tuned from walk.pt on uneven terrain to improve robustness to surface variation — this is the policy deployed on the real robot for walking. The **stair policy** is also initialized from walk.pt (not walk2) and fine-tuned on the stair heightfield curriculum; it is deployed separately for stair climbing.
