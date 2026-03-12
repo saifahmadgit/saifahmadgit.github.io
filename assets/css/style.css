@@ -190,9 +190,9 @@ a:hover {
 }
 
 .video {
-  width: 80%;
-  max-width: 800px;
-  height: 450px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   margin: 16px 0;
