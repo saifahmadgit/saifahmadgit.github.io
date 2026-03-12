@@ -13,6 +13,7 @@ This project trains **PPO locomotion policies** in the **Genesis** physics simul
 The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
 
 <iframe class="video"
+        style="aspect-ratio:16/9.95;"
         src="https://www.youtube.com/embed/fUJIFljTWT8"
         title="Unitree Go2 — Project Overview"
         frameborder="0"
@@ -20,6 +21,7 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
         allowfullscreen></iframe>
 
 <iframe class="video"
+        style="aspect-ratio:16/9.95;"
         src="https://www.youtube.com/embed/Nv_mxngRGLE"
         title="Unitree Go2 — Omnidirectional Walking Demo"
         frameborder="0"
