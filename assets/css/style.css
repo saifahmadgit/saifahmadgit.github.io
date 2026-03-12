@@ -118,18 +118,18 @@ a:hover {
 }
 
 .project-page h2 {
-  font-size: 1.2rem;
+  font-size: 2.4rem;
   font-weight: 600;
-  margin: 40px 0 12px;
+  margin: 64px 0 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid #ddd;
   color: #111;
 }
 
 .project-page h3 {
-  font-size: 1rem;
+  font-size: 2rem;
   font-weight: 600;
-  margin: 24px 0 8px;
+  margin: 48px 0 12px;
   color: #222;
 }
 
