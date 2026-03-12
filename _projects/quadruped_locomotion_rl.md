@@ -2,7 +2,7 @@
 layout: project
 title: Unitree Go2 Reinforcement Learning (PPO) Sim-to-Real Locomotion
 order: 1
-tags: Reinforcement Learning, Genesis Simulation, Sim-to-Real, Domain Randomization, Curriculum Learning, Per-Leg Stiffness
+tags: "Reinforcement Learning (PPO), Sim-to-Real, Genesis"
 gif: /assets/gifs/sim_to_real.gif
 ---
 
@@ -12,6 +12,8 @@ This project trains **PPO locomotion policies** in the **Genesis** physics simul
 
 The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
 
+<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Stair Climb</p>
+
 <iframe class="video"
         style="aspect-ratio:16/9.95;"
         src="https://www.youtube.com/embed/fUJIFljTWT8"
@@ -19,6 +21,8 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
+
+<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Walking</p>
 
 <iframe class="video"
         style="aspect-ratio:16/9.95;"
@@ -70,6 +74,8 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 
 **4. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
 
+<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Stress Test in Simulation</p>
+
 <iframe class="video"
         style="width:60%;"
         src="https://www.youtube.com/embed/UsnEFw2Oe-0"
@@ -78,17 +84,15 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
+<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Deployment Trials and Improvement</p>
+
 <iframe class="video"
         style="width:60%;"
         src="https://www.youtube.com/embed/DeX5ISVCREw"
-        title="Unitree Go2 — Additional Demo"
+        title="Unitree Go2 — Deployment Trials and Improvement"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
-
-**Policy lineage**
-
-Three checkpoints form the deployment chain. **walk.pt** is the stable omnidirectional walking policy trained from scratch on flat terrain with full DR and curriculum. **walk2** is fine-tuned from walk.pt on uneven terrain to improve robustness to surface variation — this is the policy deployed on the real robot for walking. The **stair policy** is also initialized from walk.pt (not walk2) and fine-tuned on the stair heightfield curriculum; it is deployed separately for stair climbing.
 
 ### Reinforcement Learning: PPO Actor-Critic
 
