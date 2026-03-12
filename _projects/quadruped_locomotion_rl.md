@@ -66,9 +66,9 @@ Both repositories are forks; this work builds on top of existing infrastructure 
 
 The pipeline runs in four stages, with explicit feedback loops guiding iteration (see diagram above):
 
-**1. Genesis simulation**: 4096 parallel environments generate rollouts. The PPO **actor** receives only proprioceptive observations available on hardware. The **critic** additionally sees privileged ground-truth quantities (friction, true velocity, mass, push forces, terrain heights) that cannot be measured at deployment. This asymmetric actor–critic design lets the critic guide value estimation during training while keeping the actor deployable with sensors that actually exist on the robot.
+**1. Genesis simulation**: 4096 parallel environments generate rollouts. The **actor** sees only the 49 proprioceptive signals available on hardware; the **critic** additionally receives privileged ground-truth quantities (friction, velocity, mass, push forces, terrain heights). This asymmetric design lets the critic guide training without making the actor dependent on information unavailable at deployment.
 
-**2. Convergence check via TensorBoard**: After training, reward curves, entropy, and learning-rate decay are inspected in TensorBoard to assess whether the policy has converged. In practice, convergence is not guaranteed: as domain randomization difficulty ramps up, the reward keeps oscillating — the policy adapts to a harder distribution and transiently drops before recovering. This instability increases further as sensor noise, control latency, and external push forces are introduced incrementally; each addition widens the effective training distribution and causes another round of oscillation before the policy settles. When rewards plateau prematurely or collapse entirely, training is revised (reward weights, curriculum thresholds, DR ranges) and restarted from step 1. If convergence is partial but the intermediate checkpoint already shows promising behavior, that checkpoint is carried forward to qualitative evaluation rather than waiting for full convergence.
+**2. Convergence check via TensorBoard**: Reward curves and entropy are inspected after training. Convergence is not clean — as DR difficulty ramps up and noise, latency, and push forces are added incrementally, the reward keeps oscillating rather than settling. If rewards collapse or plateau too early, training is revised and restarted. A partially converged checkpoint is carried forward if it already shows promising behavior.
 
 <div style="display:flex;gap:32px;flex-wrap:wrap;margin:16px 0;justify-content:center;">
   <figure style="width:33%;margin:0;text-align:center;">
@@ -81,7 +81,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
   </figure>
 </div>
 
-**3. Qualitative stress testing in sim**: A converged (or sufficiently good) policy is visually inspected in simulation. This is a deliberate qualitative assessment: does the gait look natural? Does the robot recover from pushes? Does it handle friction extremes and payload changes without collapsing? The policy is subjected to friction sweeps, observation and action noise, control latency, external push impulses, dynamic payload, and stair heights. If the behavior looks wrong (unstable footfall, unnatural posture, poor recovery), training is revised and the loop restarts from step 1. Only a policy that passes visual inspection moves forward.
+**3. Qualitative stress testing in sim**: The policy is visually inspected — gait naturalness, push recovery, friction and payload extremes. If behavior looks wrong, training is revised and restarted. Only policies that pass visual inspection move to hardware.
 
 <iframe class="video"
         style="width:72%;"
@@ -91,7 +91,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
-**4. Hardware deployment**: The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
+**4. Hardware deployment**: The actor runs at **50 Hz**; motor commands stream over DDS at **500 Hz**. Real-robot trials feed back into the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
 
 <iframe class="video"
         style="width:72%;"
