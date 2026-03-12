@@ -19,6 +19,13 @@ The central challenge is the **sim-to-real gap**: policies trained in simulation
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
+<iframe class="video"
+        src="https://www.youtube.com/embed/Nv_mxngRGLE"
+        title="Unitree Go2 — Omnidirectional Walking Demo"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+
 ## Inspirations
 
 - **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)** — overall sim-to-real reinforcement learning framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
@@ -226,13 +233,6 @@ The policy achieves robust omnidirectional locomotion: forward/backward, lateral
 <iframe class="video"
         src="https://www.youtube.com/embed/vyA5PE-hZUc"
         title="Unitree Go2 — Sim + Real Omnidirectional Walking"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-
-<iframe class="video"
-        src="https://www.youtube.com/embed/Nv_mxngRGLE"
-        title="Unitree Go2 — Omnidirectional Walking Demo"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
