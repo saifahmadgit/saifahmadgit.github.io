@@ -72,10 +72,6 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 
 **3. Qualitative stress testing in sim**: A converged (or sufficiently good) policy is visually inspected in simulation. This is a deliberate qualitative assessment: does the gait look natural? Does the robot recover from pushes? Does it handle friction extremes and payload changes without collapsing? The policy is subjected to friction sweeps, observation and action noise, control latency, external push impulses, dynamic payload, and stair heights. If the behavior looks wrong (unstable footfall, unnatural posture, poor recovery), training is revised and the loop restarts from step 1. Only a policy that passes visual inspection moves forward.
 
-**4. Hardware deployment**: The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
-
-## Stress Test in Simulation
-
 <iframe class="video"
         style="width:72%;"
         src="https://www.youtube.com/embed/UsnEFw2Oe-0"
@@ -84,7 +80,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
-## Deployment Trials and Improvement
+**4. Hardware deployment**: The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
 
 <iframe class="video"
         style="width:72%;"
