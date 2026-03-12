@@ -220,8 +220,6 @@ Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy out
 
 The policy achieves robust omnidirectional locomotion: forward/backward, lateral stepping, and yaw rotation. Transfer to hardware is successful — the robot walks reliably on indoor floors, transitions between surfaces, and recovers from external pushes.
 
-<img src="{{ '/assets/gifs/sim_And_real_Omni.gif' | relative_url }}" alt="Omnidirectional walking: simulation and real" style="width:100%;border-radius:8px;margin:16px 0;">
-
 ## Part II — Stair Climbing
 
 ### Approach
@@ -276,14 +274,6 @@ Commands during stair training are **forward-only** (no lateral, no yaw) — the
 
 **Two-phase DR schedule:** stair learning and DR are decoupled. During Phase 1 (terrain curriculum level < 0.5), DR is capped at level 0.15 so the robot can focus on the novel task without simultaneous dynamics disturbance. Once the policy handles mid-difficulty stairs (Phase 2), DR ramps up to the full ceiling for robustness.
 
-### Results — Stair Climbing
-
-<img src="{{ '/assets/gifs/Stairs.gif' | relative_url }}" alt="Stair climbing in Genesis simulation" style="width:100%;border-radius:8px;margin:16px 0;">
-
-The blind policy transfers to the real staircase (39 cm tread, ~15 cm riser) using only proprioception.
-
-<img src="{{ '/assets/gifs/stairs_final.gif' | relative_url }}" alt="Stair climbing on real Unitree Go2" style="width:100%;border-radius:8px;margin:16px 0;">
-
 ## Deployment Details
 
 ### Dual-Frequency Control Loop
@@ -329,7 +319,3 @@ In practice the gap persists in subtle ways. Successful policies achieve the goa
 - **Exteroceptive sensing** — adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
 - **Online adaptation** — an RMA-style adaptation module could estimate real-world parameter shifts (payload, surface friction) at deployment and feed a compact latent into the actor, bridging the remaining gap without retraining
 
-## References
-
-- [Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)
-- [Variable Stiffness for Robust Locomotion through RL (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)
