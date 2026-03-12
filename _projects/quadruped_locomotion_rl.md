@@ -71,13 +71,13 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 **2. Convergence check via TensorBoard**: After training, reward curves, entropy, and learning-rate decay are inspected in TensorBoard to assess whether the policy has converged. In practice, convergence is not guaranteed: as domain randomization difficulty ramps up, the reward keeps oscillating — the policy adapts to a harder distribution and transiently drops before recovering. This instability increases further as sensor noise, control latency, and external push forces are introduced incrementally; each addition widens the effective training distribution and causes another round of oscillation before the policy settles. When rewards plateau prematurely or collapse entirely, training is revised (reward weights, curriculum thresholds, DR ranges) and restarted from step 1. If convergence is partial but the intermediate checkpoint already shows promising behavior, that checkpoint is carried forward to qualitative evaluation rather than waiting for full convergence.
 
 <div style="display:flex;gap:32px;flex-wrap:wrap;margin:16px 0;justify-content:center;">
-  <figure style="width:45%;margin:0;text-align:center;">
+  <figure style="width:33%;margin:0;text-align:center;">
     <img src="{{ '/assets/images/walk_train.png' | relative_url }}" alt="Training reward curve" style="width:100%;border-radius:6px;">
-    <figcaption style="font-size:2.1rem;color:#555;margin-top:8px;">Training reward over iterations — oscillations visible as DR difficulty increases</figcaption>
+    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Training reward over iterations — oscillations visible as DR difficulty increases</figcaption>
   </figure>
-  <figure style="width:45%;margin:0;text-align:center;">
+  <figure style="width:33%;margin:0;text-align:center;">
     <img src="{{ '/assets/images/walk_entropy.png' | relative_url }}" alt="Policy entropy curve" style="width:100%;border-radius:6px;">
-    <figcaption style="font-size:2.1rem;color:#555;margin-top:8px;">Policy entropy over training — entropy never comes down to zero but oscillates in a range, reflecting the ongoing difficulty of the training distribution</figcaption>
+    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Policy entropy over training — entropy never comes down to zero but oscillates in a range, reflecting the ongoing difficulty of the training distribution</figcaption>
   </figure>
 </div>
 
