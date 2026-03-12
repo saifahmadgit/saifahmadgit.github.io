@@ -332,5 +332,5 @@ In practice the gap persists in subtle ways. Successful policies achieve the goa
 
 - **System identification for actuators** — fitting simulator actuator parameters to real motor response (frequency response, current-to-torque mapping) would substantially reduce the PD gain mismatch that is currently compensated by the KP_FACTOR deployment knob
 - **Exteroceptive sensing** — adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
-- **Online adaptation** — an RMA-style adaptation module could estimate real-world parameter shifts (payload, surface friction) at deployment and feed a compact latent into the actor, bridging the remaining gap without retraining
+- **High-level policy** — a hierarchical controller that uses LiDAR or camera perception to select between low-level locomotion policies (e.g. switching from flat-ground walking to stair-climbing mode upon detecting stairs)
 
