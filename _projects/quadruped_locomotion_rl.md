@@ -121,19 +121,11 @@ The policy outputs **16 actions**: 12 joint position targets (hip/thigh/calf × 
 
 **Simulation videos**
 
-<div style="background:#eaecf4;border-radius:8px;padding:32px;text-align:center;margin:24px 0;color:#666;font-style:italic;">
-  [Video placeholder — Genesis simulation: omnidirectional walking]
-</div>
-
 ### First Sim-to-Real Attempt
 
 The baseline policy — trained with clean observations, zero latency, and fixed dynamics — learns a stable walk in simulation. On hardware it fails within seconds: the robot struggles to balance, overshoots joint targets, and falls.
 
 The failure comes down to the fact that the simulator presents a fundamentally different world from the real robot. There is no sensor noise, no control delay, and dynamics are fixed across every episode. A policy that has only ever seen a clean, perfectly consistent environment cannot cope with the variability it encounters on hardware — noisy IMU readings, encoder quantization, bus latency between command and execution, and surface friction it has never been exposed to.
-
-<div style="background:#eaecf4;border-radius:8px;padding:32px;text-align:center;margin:24px 0;color:#666;font-style:italic;">
-  [Video placeholder — first deployment attempt: failure on real Go2]
-</div>
 
 ### Closing the Gap
 
@@ -230,13 +222,6 @@ The policy achieves robust omnidirectional locomotion: forward/backward, lateral
 
 <img src="{{ '/assets/gifs/sim_And_real_Omni.gif' | relative_url }}" alt="Omnidirectional walking: simulation and real" style="width:100%;border-radius:8px;margin:16px 0;">
 
-<iframe class="video"
-        src="https://www.youtube.com/embed/vyA5PE-hZUc"
-        title="Unitree Go2 — Sim + Real Omnidirectional Walking"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-
 ## Part II — Stair Climbing
 
 ### Approach
@@ -295,17 +280,9 @@ Commands during stair training are **forward-only** (no lateral, no yaw) — the
 
 <img src="{{ '/assets/gifs/Stairs.gif' | relative_url }}" alt="Stair climbing in Genesis simulation" style="width:100%;border-radius:8px;margin:16px 0;">
 
-<div style="background:#eaecf4;border-radius:8px;padding:32px;text-align:center;margin:24px 0;color:#666;font-style:italic;">
-  [Video placeholder — stair climbing in Genesis simulation]
-</div>
-
 The blind policy transfers to the real staircase (39 cm tread, ~15 cm riser) using only proprioception.
 
 <img src="{{ '/assets/gifs/stairs_final.gif' | relative_url }}" alt="Stair climbing on real Unitree Go2" style="width:100%;border-radius:8px;margin:16px 0;">
-
-<div style="background:#eaecf4;border-radius:8px;padding:32px;text-align:center;margin:24px 0;color:#666;font-style:italic;">
-  [Video placeholder — stair climbing on real Go2]
-</div>
 
 ## Deployment Details
 
