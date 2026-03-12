@@ -8,38 +8,38 @@ gif: /assets/gifs/sim_to_real.gif
 
 ## Overview
 
-This project trains **PPO locomotion policies** in the **Genesis** physics simulator and deploys them on a real **Unitree Go2** quadruped. In simulation, four behaviors were developed: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**. Of these, walking and stair climbing have been successfully transferred to hardware using only proprioceptive sensing — no camera or LiDAR.
+This project trains **PPO locomotion policies** in the **Genesis** physics simulator and deploys them on a real **Unitree Go2** quadruped. In simulation, four behaviors were developed: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**. Of these, walking and stair climbing have been successfully transferred to hardware using only proprioceptive sensing (no camera or LiDAR).
 
 The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
 
-<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Stair Climb</p>
+## Stair Climb
 
 <iframe class="video"
         style="aspect-ratio:16/9.95;"
         src="https://www.youtube.com/embed/fUJIFljTWT8"
-        title="Unitree Go2 — Project Overview"
+        title="Unitree Go2 - Project Overview"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
-<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Walking</p>
+## Walking
 
 <iframe class="video"
         style="aspect-ratio:16/9.95;"
         src="https://www.youtube.com/embed/Nv_mxngRGLE"
-        title="Unitree Go2 — Omnidirectional Walking Demo"
+        title="Unitree Go2 - Omnidirectional Walking Demo"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
 ## Inspirations
 
-- **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)** — overall sim-to-real reinforcement learning framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
-- **[Variable Stiffness for Robust Locomotion through Reinforcement Learning (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)** — per-leg adaptive stiffness formulation (Kd = 0.2 × √Kp), and domain randomization parameter ranges for friction, mass, motor gains, and external push forces
+- **[Extreme Parkour with Legged Robots](https://extreme-parkour.github.io/)**: overall sim-to-real reinforcement learning framework: asymmetric actor-critic, privileged critic observations, and domain randomization strategy
+- **[Variable Stiffness for Robust Locomotion through Reinforcement Learning (arXiv 2502.09436)](https://arxiv.org/abs/2502.09436)**: per-leg adaptive stiffness formulation (Kd = 0.2 × √Kp), and domain randomization parameter ranges for friction, mass, motor gains, and external push forces
 
 ## Code
 
-Both repositories are forks — this work builds on top of existing infrastructure with significant modifications for the training pipeline and deployment stack.
+Both repositories are forks; this work builds on top of existing infrastructure with significant modifications for the training pipeline and deployment stack.
 
 <div style="display:flex;gap:20px;flex-wrap:wrap;margin:20px 0;width:100%;">
   <a href="https://github.com/saifahmadgit/quadruped_locomotion_UnitreeGo2_RL" target="_blank" rel="noopener"
@@ -66,43 +66,43 @@ Both repositories are forks — this work builds on top of existing infrastructu
 
 The pipeline runs in four stages, with explicit feedback loops guiding iteration (see diagram above):
 
-**1. Genesis simulation** — 4096 parallel environments generate rollouts. The PPO **actor** receives only proprioceptive observations available on hardware. The **critic** additionally sees privileged ground-truth quantities (friction, true velocity, mass, push forces, terrain heights) that cannot be measured at deployment. This asymmetric actor–critic design lets the critic guide value estimation during training while keeping the actor deployable with sensors that actually exist on the robot.
+**1. Genesis simulation**: 4096 parallel environments generate rollouts. The PPO **actor** receives only proprioceptive observations available on hardware. The **critic** additionally sees privileged ground-truth quantities (friction, true velocity, mass, push forces, terrain heights) that cannot be measured at deployment. This asymmetric actor–critic design lets the critic guide value estimation during training while keeping the actor deployable with sensors that actually exist on the robot.
 
-**2. Convergence check via TensorBoard** — After training, reward curves, entropy, and learning-rate decay are inspected in TensorBoard to assess whether the policy has converged. In practice, convergence is not guaranteed: rewards sometimes plateau prematurely or begin decreasing, indicating instability or a reward shaping issue. When this happens, training is revised (reward weights, curriculum thresholds, DR ranges) and restarted from step 1. If convergence is partial but the intermediate checkpoint already shows promising behavior, that checkpoint is carried forward to qualitative evaluation rather than waiting for full convergence.
+**2. Convergence check via TensorBoard**: After training, reward curves, entropy, and learning-rate decay are inspected in TensorBoard to assess whether the policy has converged. In practice, convergence is not guaranteed: rewards sometimes plateau prematurely or begin decreasing, indicating instability or a reward shaping issue. When this happens, training is revised (reward weights, curriculum thresholds, DR ranges) and restarted from step 1. If convergence is partial but the intermediate checkpoint already shows promising behavior, that checkpoint is carried forward to qualitative evaluation rather than waiting for full convergence.
 
-**3. Qualitative stress testing in sim** — A converged (or sufficiently good) policy is visually inspected in simulation. This is a deliberate qualitative assessment: does the gait look natural? Does the robot recover from pushes? Does it handle friction extremes and payload changes without collapsing? The policy is subjected to friction sweeps, observation and action noise, control latency, external push impulses, dynamic payload, and stair heights. If the behavior looks wrong — unstable footfall, unnatural posture, poor recovery — training is revised and the loop restarts from step 1. Only a policy that passes visual inspection moves forward.
+**3. Qualitative stress testing in sim**: A converged (or sufficiently good) policy is visually inspected in simulation. This is a deliberate qualitative assessment: does the gait look natural? Does the robot recover from pushes? Does it handle friction extremes and payload changes without collapsing? The policy is subjected to friction sweeps, observation and action noise, control latency, external push impulses, dynamic payload, and stair heights. If the behavior looks wrong (unstable footfall, unnatural posture, poor recovery), training is revised and the loop restarts from step 1. Only a policy that passes visual inspection moves forward.
 
-**4. Hardware deployment** — The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle — adjusting DR ranges, reward weights, or curriculum thresholds.
+**4. Hardware deployment**: The actor runs at **50 Hz**. Motor commands stream over the Go2 DDS bus at **500 Hz**. Real-robot trials provide qualitative feedback that informs the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
 
-<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Stress Test in Simulation</p>
+## Stress Test in Simulation
 
 <iframe class="video"
         style="width:60%;"
         src="https://www.youtube.com/embed/UsnEFw2Oe-0"
-        title="Unitree Go2 — Stress Test in Simulation"
+        title="Unitree Go2 - Stress Test in Simulation"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
-<p style="text-align:center;font-weight:600;font-size:1.05rem;margin-bottom:8px;">Deployment Trials and Improvement</p>
+## Deployment Trials and Improvement
 
 <iframe class="video"
         style="width:60%;"
         src="https://www.youtube.com/embed/DeX5ISVCREw"
-        title="Unitree Go2 — Deployment Trials and Improvement"
+        title="Unitree Go2 - Deployment Trials and Improvement"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
 
 ### Reinforcement Learning: PPO Actor-Critic
 
-Standard PPO trains a single network that sees all available information. For sim-to-real transfer this creates a problem: the simulator knows things the real robot cannot measure — exact friction, true base velocity, current mass distribution, applied push forces. If the policy learns to depend on any of these, it will fail at deployment.
+Standard PPO trains a single network that sees all available information. For sim-to-real transfer this creates a problem: the simulator knows things the real robot cannot measure: exact friction, true base velocity, current mass distribution, applied push forces. If the policy learns to depend on any of these, it will fail at deployment.
 
-The solution is an **asymmetric actor-critic**. The actor is constrained to only the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action). The critic, which exists only during training to estimate value, receives the full privileged state on top of the actor observations. This lets the critic provide accurate value targets that guide the actor toward good behavior — without the actor ever seeing information it will not have on the robot.
+The solution is an **asymmetric actor-critic**. The actor is constrained to only the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action). The critic, which exists only during training to estimate value, receives the full privileged state on top of the actor observations. This lets the critic provide accurate value targets that guide the actor toward good behavior, without the actor ever seeing information it will not have on the robot.
 
 <img src="{{ '/assets/images/Actor_critic.png' | relative_url }}" alt="Actor-Critic observation asymmetry" style="width:55%;display:block;margin:16px auto;border-radius:8px;">
 
-## Part I — Omnidirectional Walking
+## Part I: Omnidirectional Walking
 
 ### Simulation Setup in Genesis
 
@@ -132,15 +132,15 @@ Training runs in **Genesis** with 4096 parallel environments. The PPO implementa
 
 **Action space**
 
-The policy outputs **16 actions**: 12 joint position targets (hip/thigh/calf × 4 legs) plus 4 per-leg stiffness scalars. Per-leg stiffness is described in the PLS section.
+The policy outputs **16 actions**: 12 joint position targets (hip/thigh/calf × 4 legs) plus 4 per-leg stiffness scalars. Per-leg stiffness is described in the Per-Leg Stiffness section.
 
 **Simulation videos**
 
 ### First Sim-to-Real Attempt
 
-The baseline policy — trained with clean observations, zero latency, and fixed dynamics — learns a stable walk in simulation. On hardware it fails within seconds: the robot struggles to balance, overshoots joint targets, and falls.
+The baseline policy (trained with clean observations, zero latency, and fixed dynamics) learns a stable walk in simulation. On hardware it fails within seconds: the robot struggles to balance, overshoots joint targets, and falls.
 
-The failure comes down to the fact that the simulator presents a fundamentally different world from the real robot. There is no sensor noise, no control delay, and dynamics are fixed across every episode. A policy that has only ever seen a clean, perfectly consistent environment cannot cope with the variability it encounters on hardware — noisy IMU readings, encoder quantization, bus latency between command and execution, and surface friction it has never been exposed to.
+The failure comes down to the fact that the simulator presents a fundamentally different world from the real robot. There is no sensor noise, no control delay, and dynamics are fixed across every episode. A policy that has only ever seen a clean, perfectly consistent environment cannot cope with the variability it encounters on hardware: noisy IMU readings, encoder quantization, bus latency between command and execution, and surface friction it has never been exposed to.
 
 ### Closing the Gap
 
@@ -160,18 +160,18 @@ DR makes the real robot a member of the training distribution. Parameters are ra
 | CoM shift | ±0.005 m | ±0.03 m | Global |
 | Per-leg hip mass | ±0.1 kg | ±0.5 kg | Global |
 | Gravity offset | ±0.2 m/s² | ±1.0 m/s² | Per-env |
-| Obs noise — ang_vel | — | ±0.2 rad/s | Per-step |
-| Obs noise — dof_pos | — | ±0.01 rad | Per-step |
-| Obs noise — dof_vel | — | ±1.5 rad/s | Per-step |
-| Action noise | — | std = 0.1 | Per-step |
+| Obs noise (ang_vel) | N/A | ±0.2 rad/s | Per-step |
+| Obs noise (dof_pos) | N/A | ±0.01 rad | Per-step |
+| Obs noise (dof_vel) | N/A | ±1.5 rad/s | Per-step |
+| Action noise | N/A | std = 0.1 | Per-step |
 | External push | None | ±150 N, every 5 s, 0.05–0.2 s | External |
 | Action delay | 0 steps | 0–1 steps (0–20 ms) | Per-episode |
 
-**Non-stationarity control:** global parameters (friction, mass, CoM) are re-randomized only every 200 resets — not every episode — to prevent the simulator from behaving like a moving target during a PPO rollout.
+**Non-stationarity control:** global parameters (friction, mass, CoM) are re-randomized only every 200 resets (not every episode) to prevent the simulator from behaving like a moving target during a PPO rollout.
 
 #### 2. Sensor Noise and Control Latency
 
-Gaussian noise is injected into every observation at each step. Control latency is modeled as a delay buffer of 0–1 steps (matching the Go2 bus delay at 50 Hz). Critically, the **observation fed back to the policy includes the delayed action that was actually applied** — not the most recently computed action. This keeps the MDP internally consistent and prevents the policy from reasoning about actions it has not yet executed.
+Gaussian noise is injected into every observation at each step. Control latency is modeled as a delay buffer of 0–1 steps (matching the Go2 bus delay at 50 Hz). Critically, the **observation fed back to the policy includes the delayed action that was actually applied**, not the most recently computed action. This keeps the MDP internally consistent and prevents the policy from reasoning about actions it has not yet executed.
 
 #### 3. External Push Forces
 
@@ -185,21 +185,21 @@ Three EMA-tracked metrics gate progression:
 
 | Metric | EMA smoothing | Level up (after 4 checks) | Level down (after 2 checks) |
 |---|---|---|---|
-| Timeout rate | α = 0.03 | ≥ 0.80 | — |
-| Velocity tracking score | α = 0.03 | ≥ 0.75 | — |
+| Timeout rate | α = 0.03 | ≥ 0.80 | N/A |
+| Velocity tracking score | α = 0.03 | ≥ 0.75 | N/A |
 | Fall rate | α = 0.03 | ≤ 0.15 | ≥ 0.25 |
 
-Level changes are asymmetric: **+0.01 up, −0.03 down** — the policy retreats from difficulty faster than it advances, preventing catastrophic forgetting. A cooldown of 5 curriculum updates separates consecutive changes.
+Level changes are asymmetric: **+0.01 up, −0.03 down**: the policy retreats from difficulty faster than it advances, preventing catastrophic forgetting. A cooldown of 5 curriculum updates separates consecutive changes.
 
 **Curriculum mixing** keeps training anchored: 80 % of environments sample the current difficulty level; the remaining 20 % sample from a lower band [0.0, 0.5]. This prevents the policy from forgetting easier behaviors as it pushes the frontier upward.
 
-### Per-Leg Stiffness (PLS)
+### Per-Leg Stiffness
 
 Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy outputs a **stiffness scalar per leg** in addition to joint position targets. Damping is derived from stiffness by a fixed formula:
 
 **Kd = 0.2 × √Kp** (Eq. 6 in the paper)
 
-| PLS parameter | Value |
+| Per-Leg Stiffness parameter | Value |
 |---|---|
 | Stiffness outputs | 4 (one per leg: FR, FL, RR, RL) |
 | Kp range (training) | [10, 70] Nm/rad |
@@ -207,7 +207,7 @@ Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy out
 | Action scale | 20 |
 | Kp range (deployment) | [20, 60] Nm/rad |
 
-**Why PLS helps:** during locomotion, the **stance leg** needs high stiffness to support body weight and resist perturbations; the **swing leg** benefits from lower stiffness to absorb contact impulses. Fixed Kp/Kd cannot express this timing-dependent compliance. With PLS the policy learns, emergently, to stiffen a leg during stance and soften it during swing. PLS also reduces brittle manual gain tuning — stiffness becomes a policy output, not a fixed hyperparameter, and it generalizes across surfaces.
+**Why Per-Leg Stiffness helps:** during locomotion, the **stance leg** needs high stiffness to support body weight and resist perturbations; the **swing leg** benefits from lower stiffness to absorb contact impulses. Fixed Kp/Kd cannot express this timing-dependent compliance. With Per-Leg Stiffness the policy learns, emergently, to stiffen a leg during stance and soften it during swing. Per-Leg Stiffness also reduces brittle manual gain tuning: stiffness becomes a policy output, not a fixed hyperparameter, and it generalizes across surfaces.
 
 ### Reward Function (Walking)
 
@@ -231,19 +231,19 @@ Inspired by [arXiv 2502.09436](https://arxiv.org/abs/2502.09436), the policy out
 | stand_still_vel | −2.0 | Penalize velocity when commands ≈ 0 |
 | feet_stance | −0.3 | Encourage proper stance timing |
 
-### Results — Omnidirectional Walking
+### Results: Omnidirectional Walking
 
-The policy achieves robust omnidirectional locomotion: forward/backward, lateral stepping, and yaw rotation. Transfer to hardware is successful — the robot walks reliably on indoor floors, transitions between surfaces, and recovers from external pushes.
+The policy achieves robust omnidirectional locomotion: forward/backward, lateral stepping, and yaw rotation. Transfer to hardware is successful; the robot walks reliably on indoor floors, transitions between surfaces, and recovers from external pushes.
 
-## Part II — Stair Climbing
+## Part II: Stair Climbing
 
 ### Approach
 
-Stair climbing introduces challenges absent on flat ground: the base must pitch forward during ascent, each leg needs higher foot clearance to clear step edges, and the terrain underfoot is discontinuous. The goal was a **blind (proprioceptive-only) policy** — no camera or LiDAR at deployment.
+Stair climbing introduces challenges absent on flat ground: the base must pitch forward during ascent, each leg needs higher foot clearance to clear step edges, and the terrain underfoot is discontinuous. The goal was a **blind (proprioceptive-only) policy** (no camera or LiDAR at deployment).
 
 The actor uses the same **49-dimensional observation** as the walking policy: no height information. The **critic**, used only during training, additionally receives a **height scan** of 11 × 7 = 77 sample points in the body frame (±0.5 m forward/backward, ±0.3 m lateral). This gives the critic terrain context to guide value estimation, without making that information a dependency of the deployable actor.
 
-The stair policy is **initialized from walk.pt** — the stable flat-terrain walking checkpoint — and fine-tuned on the stair heightfield at a lower learning rate (3 × 10⁻⁴), appropriate for transfer learning. Starting from walk.pt rather than from scratch cuts the time needed to reach competence on low stairs, since the walking gait provides a strong initialization for the leg coordination patterns required for climbing.
+The stair policy is **initialized from walk.pt** (the stable flat-terrain walking checkpoint) and fine-tuned on the stair heightfield at a lower learning rate (3 × 10⁻⁴), appropriate for transfer learning. Starting from walk.pt rather than from scratch cuts the time needed to reach competence on low stairs, since the walking gait provides a strong initialization for the leg coordination patterns required for climbing.
 
 ### Terrain Curriculum
 
@@ -253,18 +253,18 @@ The stair terrain is a heightfield with **13 difficulty rows**, each row contain
 |---|---|
 | Difficulty levels | 13 rows |
 | Step height range | 2 cm (row 0) → 15 cm (row 12) |
-| Step depth (tread) | 39 cm — matched to the real staircase |
+| Step depth (tread) | 39 cm (matched to the real staircase) |
 | Steps per flight | 6 up + 6 down |
 | Flights per row | 4 up-down cycles |
 | Heightfield resolution | 5 cm horizontal, 0.5 cm vertical |
 | Episode length | 25 s |
 
-The curriculum starts at **level 0.65** (row ~8 of 13) because the walking policy already handles low stairs. Thresholds are relaxed relative to the walking curriculum — stair climbing slows the robot, so tracking scores are naturally lower:
+The curriculum starts at **level 0.65** (row ~8 of 13) because the walking policy already handles low stairs. Thresholds are relaxed relative to the walking curriculum; stair climbing slows the robot, so tracking scores are naturally lower:
 
 | Metric | Threshold (advance) | Threshold (retreat) |
 |---|---|---|
-| Timeout rate | ≥ 0.60 | — |
-| Tracking score | ≥ 0.45 | — |
+| Timeout rate | ≥ 0.60 | N/A |
+| Tracking score | ≥ 0.45 | N/A |
 | Fall rate | ≤ 0.35 | ≥ 0.40 |
 | Streak needed | 5 checks | 2 checks |
 
@@ -276,16 +276,16 @@ Several reward terms are modified from the walking policy to accommodate stair-s
 
 | Term | Walking | Stairs | Reason |
 |---|---|---|---|
-| forward_progress | — | +0.4 | Direct incentive for +x displacement on stairs |
-| orientation | roll + pitch | **roll only** (−5.0) | Pitch is expected during ascent — do not penalize it |
+| forward_progress | N/A | +0.4 | Direct incentive for +x displacement on stairs |
+| orientation | roll + pitch | **roll only** (−5.0) | Pitch is expected during ascent; do not penalize it |
 | lin_vel_z | −2.0 | −1.0 + 0.15 m/s deadzone | Allow upward body velocity during step climbing |
 | base_height | −0.6 | −0.1 | Robot needs freedom to bob on uneven steps |
 | similar_to_default | −0.1 | −0.05 | Stair postures naturally deviate from default stance |
-| foot_clearance | −0.1 | **−0.5** (terrain-relative) | Must clear step edges — the key stair reward |
+| foot_clearance | −0.1 | **−0.5** (terrain-relative) | Must clear step edges (the key stair reward) |
 | feet_height_target | 0.075 m | **0.17 m** | Higher foot lift required to clear step edges |
 | tracking_lin_vel | +1.5 | +1.5 | Kept, but commands restricted to forward-only [0.3, 0.8] m/s |
 
-Commands during stair training are **forward-only** (no lateral, no yaw) — the terrain is a corridor layout and the task is purely ascending/descending.
+Commands during stair training are **forward-only** (no lateral, no yaw); the terrain is a corridor layout and the task is purely ascending/descending.
 
 **Two-phase DR schedule:** stair learning and DR are decoupled. During Phase 1 (terrain curriculum level < 0.5), DR is capped at level 0.15 so the robot can focus on the novel task without simultaneous dynamics disturbance. Once the policy handles mid-difficulty stairs (Phase 2), DR ramps up to the full ceiling for robustness.
 
@@ -311,7 +311,7 @@ Before activating the policy:
 
 At shutdown, 200 stop packets are flushed to ensure a safe zero-torque state.
 
-### PLS Deployment Knobs
+### Per-Leg Stiffness Deployment Knobs
 
 The network-computed stiffness output can be scaled at runtime without retraining:
 
@@ -320,17 +320,24 @@ final_Kp = network_Kp × KP_FACTOR
 final_Kd = network_Kd × KD_FACTOR
 ```
 
-KP_FACTOR = 1.0 by default. Increasing it stiffens the robot; decreasing it softens it. This is particularly useful because the same Kp/Kd values produce different joint behavior in sim and on hardware — the runtime factor provides a one-knob adjustment without retraining.
+KP_FACTOR = 1.0 by default. Increasing it stiffens the robot; decreasing it softens it. This is particularly useful because the same Kp/Kd values produce different joint behavior in sim and on hardware; the runtime factor provides a one-knob adjustment without retraining.
 
 ## Conclusions and Future Work
 
-The sim-to-real gap is inherent: no simulator fully captures actuator compliance, contact mechanics, or real-world sensor characteristics. Domain randomization addresses this by making the real robot a member of the training distribution — rather than matching sim to reality exactly, it makes reality a subset of the simulated variations.
+The sim-to-real gap is inherent: no simulator fully captures actuator compliance, contact mechanics, or real-world sensor characteristics. Domain randomization addresses this by making the real robot a member of the training distribution; rather than matching sim to reality exactly, it makes reality a subset of the simulated variations.
 
-In practice the gap persists in subtle ways. Successful policies achieve the goal (walking, climbing stairs), but the motion strategies differ between simulation and hardware. The same Kp/Kd values produce noticeably different joint behavior in the two settings — pointing to unmodeled actuator compliance and transmission elasticity.
+In practice the gap persists in subtle ways. Successful policies achieve the goal (walking, climbing stairs), but the motion strategies differ between simulation and hardware. The same Kp/Kd values produce noticeably different joint behavior in the two settings, pointing to unmodeled actuator compliance and transmission elasticity.
 
 **Future directions:**
 
-- **System identification for actuators** — fitting simulator actuator parameters to real motor response (frequency response, current-to-torque mapping) would substantially reduce the PD gain mismatch that is currently compensated by the KP_FACTOR deployment knob
-- **Exteroceptive sensing** — adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
-- **High-level policy** — a hierarchical controller that uses LiDAR or camera perception to select between low-level locomotion policies (e.g. switching from flat-ground walking to stair-climbing mode upon detecting stairs)
+- **System identification for actuators**: fitting simulator actuator parameters to real motor response (frequency response, current-to-torque mapping) would substantially reduce the PD gain mismatch that is currently compensated by the KP_FACTOR deployment knob
+- **Exteroceptive sensing**: adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
+- **High-level policy**: a hierarchical controller that uses LiDAR or camera perception to select between low-level locomotion policies (e.g. switching from flat-ground walking to stair-climbing mode upon detecting stairs)
+
+## Slides
+
+<a href="{{ '/assets/quaduped_locomotion_Rl.odp' | relative_url }}" download style="display:inline-flex;align-items:center;gap:10px;background:#eaecf4;border-radius:8px;padding:16px 24px;text-decoration:none;color:#111;font-weight:600;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+  Download Slides (.odp)
+</a>
 
