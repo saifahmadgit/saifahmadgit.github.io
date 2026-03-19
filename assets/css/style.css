@@ -77,6 +77,21 @@ a:hover {
   background: #eaecf4;
   border-radius: 8px;
   padding: 28px;
+  position: relative;
+}
+
+/* Stretched link: title anchor covers the whole card */
+.project-title-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Keep GitHub external link clickable above the overlay */
+.project-info a[target="_blank"] {
+  position: relative;
+  z-index: 2;
 }
 .project-media {
   flex: 0 0 38%;
