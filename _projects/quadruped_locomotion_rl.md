@@ -1,36 +1,23 @@
 ---
 layout: project
-title: Unitree Go2 Reinforcement Learning (PPO) Sim-to-Real Locomotion
+title: Sim-to-Real Reinforcement Learning Walking Including Stairs
 order: 1
 tech_tags: "Reinforcement Learning (PPO), Sim-to-Real, Genesis"
 gif: /assets/gifs/sim_to_real.gif
 ---
+
+<iframe class="video"
+        src="https://www.youtube.com/embed/nrwN8KrsD2c"
+        title="Sim-to-Real Reinforcement Learning Walking Including Stairs"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
 
 ## Overview
 
 The goal of this project is to train locomotion policies for a quadruped robot using Reinforcement Learning and transfer them to a real robot. Concretely, **PPO locomotion policies** are trained in the **Genesis** physics simulator and deployed on a real **Unitree Go2**. Four behaviors were developed in simulation: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**. Of these, walking and stair climbing have been successfully transferred to hardware using only proprioceptive sensing (no camera or LiDAR).
 
 The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
-
-## Stair Climb
-
-<iframe class="video"
-        style="aspect-ratio:16/8.46;"
-        src="https://www.youtube.com/embed/fUJIFljTWT8"
-        title="Unitree Go2 - Project Overview"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-
-## Walking
-
-<iframe class="video"
-        style="aspect-ratio:16/8.46;"
-        src="https://www.youtube.com/embed/Nv_mxngRGLE"
-        title="Unitree Go2 - Omnidirectional Walking Demo"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
 
 ## Inspirations
 
@@ -83,23 +70,7 @@ The pipeline runs in four stages, with explicit feedback loops guiding iteration
 
 **3. Qualitative stress testing in sim**: The policy is visually inspected — gait naturalness, push recovery, friction and payload extremes. If behavior looks wrong, training is revised and restarted. Only policies that pass visual inspection move to hardware.
 
-<iframe class="video"
-        style="width:72%;"
-        src="https://www.youtube.com/embed/UsnEFw2Oe-0"
-        title="Unitree Go2 - Stress Test in Simulation"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-
 **4. Hardware deployment**: The actor runs at **50 Hz**; motor commands stream over DDS at **500 Hz**. Real-robot trials feed back into the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
-
-<iframe class="video"
-        style="width:72%;"
-        src="https://www.youtube.com/embed/DeX5ISVCREw"
-        title="Unitree Go2 - Deployment Trials and Improvement"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
 
 ### Reinforcement Learning: PPO Actor-Critic
 
