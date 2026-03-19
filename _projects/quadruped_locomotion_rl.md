@@ -16,9 +16,9 @@ gif: /assets/gifs/sim_to_real.gif
 
 ## Overview
 
-The goal of this project is to train locomotion policies for a quadruped robot using Reinforcement Learning and transfer them to a real robot. Concretely, **PPO locomotion policies** are trained in the **Genesis** physics simulator and deployed on a real **Unitree Go2**. Four behaviors were developed in simulation: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**. Of these, walking and stair climbing have been successfully transferred to hardware using only proprioceptive sensing (no camera or LiDAR).
+**PPO locomotion policies** trained in the **Genesis** physics simulator deploy on a real **Unitree Go2** — no camera, no LiDAR, proprioceptive sensing only. Four behaviors were developed in simulation: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**; walking and stair climbing transfer successfully to hardware.
 
-The central challenge is the **sim-to-real gap**: policies trained in simulation fail on hardware because of unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation. The work closes this gap through domain randomization, sensor noise and latency modeling, metric-gated curriculum learning, and per-leg adaptive stiffness.
+The core problem is the **sim-to-real gap**: unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation cause simulation-trained policies to fail on hardware. This work closes the gap through domain randomization, sensor noise and latency injection, metric-gated curriculum learning, and per-leg adaptive stiffness.
 
 ## Workflow
 
