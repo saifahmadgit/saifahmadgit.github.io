@@ -24,7 +24,8 @@ title: Portfolio
   <div class="project-info">
     <p><a class="project-title-link" href="{{ site.baseurl }}/projects/franka/"><strong>Franka Vision-Guided Pick & Place</strong></a></p>
     <p class="project-tags"><span class="tag">ROS 2</span><span class="tag">MoveIt 2</span><span class="tag">YOLOv8</span><span class="tag">Intel RealSense</span></p>
-    <p>A complete vision-guided pick-and-place system integrating YOLOv8 object detection, 3D pose estimation, and MoveIt 2 trajectory planning to autonomously grasp and place objects on a Franka Panda robot. Group project with Robert, Florian, and Aravind.</p>
+    <p>A complete vision-guided pick-and-place system integrating YOLOv8 object detection, 3D pose estimation, and MoveIt 2 trajectory planning to autonomously grasp and place objects on a Franka Panda robot.</p>
+    <p style="font-size:0.9rem;color:#555;">Group project with Robert, Florian, and Aravind</p>
     <p><a href="https://github.com/saifahmadgit/franka-vision-guided-manipulation" target="_blank" rel="noopener">GitHub ↗</a></p>
   </div>
 </div>

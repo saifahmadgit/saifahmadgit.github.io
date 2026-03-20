@@ -8,8 +8,6 @@ gif: /assets/gifs/franka_demo.gif
 
 **Group project with Robert, Florian, and Aravind** · Fall Quarter · ME 495 Embedded Systems in Robotics
 
-**My role:** perception pipeline — YOLO detection node, multi-frame aggregation, and ArUco-based hand-eye calibration.
-
 ---
 
 <iframe class="video" src="https://www.youtube.com/embed/L8qCKQ8qogY" allowfullscreen></iframe>
