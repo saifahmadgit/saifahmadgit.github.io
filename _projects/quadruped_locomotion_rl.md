@@ -22,7 +22,7 @@ The core problem is the **sim-to-real gap**: unmodeled actuator dynamics, sensin
 
 ## Workflow
 
-<img src="{{ '/assets/images/blockDiagram.png' | relative_url }}" alt="Training and deployment workflow" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
+<img src="{{ '/assets/images/BigPicture_RL_training.png' | relative_url }}" alt="Training and deployment workflow" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
 
 The pipeline runs in four stages with explicit feedback loops (see diagram):
 
