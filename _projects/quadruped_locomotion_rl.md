@@ -26,13 +26,11 @@ The core problem is the **sim-to-real gap**: unmodeled actuator dynamics, sensin
 
 The pipeline runs in four stages with explicit feedback loops (see diagram):
 
-**1. RL Training**: PPO runs across **4096 parallel environments** in Genesis. The **actor** is constrained to the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action); the **critic** additionally receives privileged ground-truth quantities: friction, base velocity, mass distribution, push forces, terrain heights. This asymmetric design lets the critic produce accurate value estimates without the actor depending on information unavailable at deployment.
+**1. RL Training**: PPO runs across **4096 parallel environments** in Genesis. The **actor** is constrained to the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action); the **critic** additionally receives privileged ground-truth quantities: friction, base velocity, mass distribution, push forces, terrain heights. This asymmetric design lets the critic produce accurate value estimates without the actor depending on information unavailable at deployment. DR difficulty is not fixed — a **metric-gated curriculum** advances it only after the policy sustains high timeout rate, velocity tracking, and low fall rate for 5 consecutive checks, and retreats three times faster than it advances to prevent the policy from getting stuck.
 
 ### Asymmetric Actor-Critic Training with Metric-Gated Curriculum
 
 <img src="{{ '/assets/images/Training.png' | relative_url }}" alt="RL training pipeline with asymmetric actor-critic and curriculum" style="width:70%;height:auto;display:block;margin:16px auto;border-radius:8px;">
-
-The curriculum monitor evaluates policy performance at regular intervals and adjusts domain randomization difficulty accordingly. Rather than scheduling difficulty on a fixed timeline, advancement is **earned**: all three conditions must hold for 5 consecutive checks before difficulty increases by 0.01. If the fall rate crosses 40% for just 2 consecutive checks, difficulty retreats by 0.03 — three times faster than it advances. This asymmetry prevents the policy from getting stuck in a regime it cannot handle while ensuring it consolidates competence before tackling harder terrain. Throughout training, 20% of environments are always sampled from easier difficulty levels to prevent catastrophic forgetting of simpler behaviors.
 
 **2. Convergence Check**: reward curves and policy entropy are monitored via TensorBoard. Clean convergence is not expected: as the metric-gated curriculum advances DR difficulty and layers in noise, latency, and push forces incrementally, reward oscillates rather than settling. A checkpoint is carried forward if it shows stable gait and acceptable tracking, not necessarily maximum reward.
 
@@ -53,9 +51,9 @@ The curriculum monitor evaluates policy performance at regular intervals and adj
 
 <img src="{{ '/assets/gifs/stress_test_sim.gif' | relative_url }}" alt="Stress test in simulation" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
 
-**4. Deployment**: the actor runs at **50 Hz** on-robot; a parallel thread streams joint position targets and per-leg Kp/Kd commands over DDS at **500 Hz**, saturating the Go2's native LowCmd protocol. The robot ramps to a default stand pose over 4 seconds before the policy activates, and a slew limiter caps per-step joint target changes at 0.1 rad to prevent jerk. Hardware trials feed directly back into the next training cycle, adjusting DR parameter ranges, reward weights, or curriculum thresholds.
+**4. Deployment**: the actor runs at **50 Hz** on-robot; a parallel thread streams joint position targets and per-leg Kp/Kd commands over DDS at **500 Hz**, saturating the Go2's native LowCmd protocol. The robot ramps to a default stand pose over 4 seconds before the policy activates, and a slew limiter caps per-step joint target changes at 0.1 rad to prevent jerk. Hardware trials are not just validation — they directly shape the next training cycle. Watching the robot on real terrain reveals what the simulator fails to stress: a policy that looked stable in sim but buckled under an unexpected shove motivated adding push forces to DR; joints overshooting under load motivated learning per-leg stiffness rather than fixing gains; gait instability on real floors informed which reward terms needed reweighting. Each hardware run feeds back into reward design, architecture choices, and what gets randomized.
 
-<!-- deployment gif goes here -->
+<img src="{{ '/assets/gifs/Deployment.gif' | relative_url }}" alt="Hardware deployment on Unitree Go2" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
 
 ## Design Decisions
 
@@ -63,7 +61,7 @@ The curriculum monitor evaluates policy performance at regular intervals and adj
 
 **Per-leg adaptive stiffness**: beyond 12 joint position targets, the policy outputs a stiffness scalar per leg. The stance leg stiffens to support body weight; the swing leg softens to absorb contact impulses. Fixed Kp/Kd cannot express this timing-dependent compliance; with learned stiffness the policy adapts emergently, and the behavior generalizes across surfaces without manual gain tuning.
 
-**Stair climbing (blind)**: the stair policy fine-tunes from the walking checkpoint on a 13-level heightfield curriculum (step heights 2–15 cm). The deployable actor uses the same 49 proprioceptive signals; only the training critic receives a height scan. Key reward modifications: pitch is not penalized (expected during ascent), foot clearance is computed terrain-relative, and target foot height increases from 7.5 cm to 17 cm to clear step edges.
+**Stair climbing (blind)**: fine-tuned from the walking checkpoint on a 13-level heightfield curriculum (step heights 2–15 cm). The actor sees the same 49 proprioceptive signals; only the training critic receives a 77-point height scan for terrain context. Training starts at level 0.65 — the walking policy already handles low steps, so the curriculum begins mid-way. Advancement thresholds are relaxed (tracking ≥ 0.45 vs ≥ 0.75 for walking) since stair climbing inherently slows the robot. DR and terrain difficulty are decoupled: below level 0.5, DR is capped so the robot focuses on the stair task; above 0.5, full DR applies. Spawn distribution favors exploration — 40% frontier, 30% near-frontier, 30% easy — to prevent forgetting easier stairs while pushing to harder ones. Reward modifications: pitch not penalized, foot clearance computed terrain-relative, foot height target raised from 7.5 cm to 17 cm.
 
 ## Conclusions and Future Work
 
