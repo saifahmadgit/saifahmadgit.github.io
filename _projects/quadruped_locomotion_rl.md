@@ -16,7 +16,7 @@ gif: /assets/gifs/sim_to_real.gif
 
 ## Overview
 
-**PPO locomotion policies** trained in the **Genesis** physics simulator deploy on a real **Unitree Go2** — no camera, no LiDAR, proprioceptive sensing only. Four behaviors were developed in simulation: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**; walking and stair climbing transfer successfully to hardware.
+**PPO locomotion policies** trained in the **Genesis** physics simulator deploy on a real **Unitree Go2**, no camera, no LiDAR, proprioceptive sensing only. Four behaviors were developed in simulation: **omnidirectional walking**, **stair climbing**, **crouching**, and **jumping**; walking and stair climbing transfer successfully to hardware.
 
 The core problem is the **sim-to-real gap**: unmodeled actuator dynamics, sensing delays, contact uncertainty, and terrain variation cause simulation-trained policies to fail on hardware. This work closes the gap through domain randomization, sensor noise and latency injection, metric-gated curriculum learning, and per-leg adaptive stiffness.
 
@@ -26,38 +26,38 @@ The core problem is the **sim-to-real gap**: unmodeled actuator dynamics, sensin
 
 The pipeline runs in four stages with explicit feedback loops (see diagram):
 
-**1. RL Training** — PPO runs across **4096 parallel environments** in Genesis. The **actor** is constrained to the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action); the **critic** additionally receives privileged ground-truth quantities — friction, base velocity, mass distribution, push forces, terrain heights. This asymmetric design lets the critic produce accurate value estimates without the actor depending on information unavailable at deployment.
+**1. RL Training**: PPO runs across **4096 parallel environments** in Genesis. The **actor** is constrained to the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action); the **critic** additionally receives privileged ground-truth quantities: friction, base velocity, mass distribution, push forces, terrain heights. This asymmetric design lets the critic produce accurate value estimates without the actor depending on information unavailable at deployment.
 
-**2. Convergence Check** — reward curves and policy entropy are monitored via TensorBoard. Clean convergence is not expected: as the metric-gated curriculum advances DR difficulty and layers in noise, latency, and push forces incrementally, reward oscillates rather than settling. A checkpoint is carried forward if it shows stable gait and acceptable tracking — not necessarily maximum reward.
+**2. Convergence Check**: reward curves and policy entropy are monitored via TensorBoard. Clean convergence is not expected: as the metric-gated curriculum advances DR difficulty and layers in noise, latency, and push forces incrementally, reward oscillates rather than settling. A checkpoint is carried forward if it shows stable gait and acceptable tracking, not necessarily maximum reward.
 
 <div style="display:flex;gap:32px;flex-wrap:wrap;margin:16px 0;justify-content:center;">
   <figure style="width:33%;margin:0;text-align:center;">
     <img src="{{ '/assets/images/walk_train.png' | relative_url }}" alt="Training reward curve" style="width:100%;border-radius:6px;">
-    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Training reward — oscillations visible as DR difficulty increases</figcaption>
+    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Training reward: oscillations visible as DR difficulty increases</figcaption>
   </figure>
   <figure style="width:33%;margin:0;text-align:center;">
     <img src="{{ '/assets/images/walk_entropy.png' | relative_url }}" alt="Policy entropy curve" style="width:100%;border-radius:6px;">
-    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Policy entropy — never settles to zero, reflecting the shifting training distribution</figcaption>
+    <figcaption style="font-size:0.85rem;color:#555;margin-top:6px;">Policy entropy: never settles to zero, reflecting the shifting training distribution</figcaption>
   </figure>
 </div>
 
-**3. Evaluation** — the policy is stress-tested in simulation before any hardware trial. Gait naturalness, push recovery, friction and payload extremes are evaluated under teleoperation. Policies that fail visual inspection are discarded; only checkpoints that demonstrate robust behavior across these conditions proceed to hardware.
+**3. Evaluation**: the policy is stress-tested in simulation before any hardware trial. Gait naturalness, push recovery, friction and payload extremes are evaluated under teleoperation. Policies that fail visual inspection are discarded; only checkpoints that demonstrate robust behavior across these conditions proceed to hardware.
 
 ### Stress Test in Simulation
 
 <img src="{{ '/assets/gifs/stress_test_sim.gif' | relative_url }}" alt="Stress test in simulation" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
 
-**4. Deployment** — the actor runs at **50 Hz** on-robot; a parallel thread streams joint position targets and per-leg Kp/Kd commands over DDS at **500 Hz**, saturating the Go2's native LowCmd protocol. The robot ramps to a default stand pose over 4 seconds before the policy activates, and a slew limiter caps per-step joint target changes at 0.1 rad to prevent jerk. Hardware trials feed directly back into the next training cycle — adjusting DR parameter ranges, reward weights, or curriculum thresholds.
+**4. Deployment**: the actor runs at **50 Hz** on-robot; a parallel thread streams joint position targets and per-leg Kp/Kd commands over DDS at **500 Hz**, saturating the Go2's native LowCmd protocol. The robot ramps to a default stand pose over 4 seconds before the policy activates, and a slew limiter caps per-step joint target changes at 0.1 rad to prevent jerk. Hardware trials feed directly back into the next training cycle, adjusting DR parameter ranges, reward weights, or curriculum thresholds.
 
 <!-- deployment gif goes here -->
 
 ## Key Technical Contributions
 
-**Metric-gated curriculum** — adding DR, noise, latency, and pushes simultaneously causes PPO to diverge. A metric-gated curriculum increases difficulty only after the policy demonstrates sustained performance across timeout rate, velocity tracking, and fall rate. Difficulty retreats three times faster than it advances, preventing catastrophic forgetting.
+**Metric-gated curriculum**: adding DR, noise, latency, and pushes simultaneously causes PPO to diverge. A metric-gated curriculum increases difficulty only after the policy demonstrates sustained performance across timeout rate, velocity tracking, and fall rate. Difficulty retreats three times faster than it advances, preventing catastrophic forgetting.
 
-**Per-leg adaptive stiffness** — beyond 12 joint position targets, the policy outputs a stiffness scalar per leg. The stance leg stiffens to support body weight; the swing leg softens to absorb contact impulses. Fixed Kp/Kd cannot express this timing-dependent compliance — with learned stiffness the policy adapts emergently, and the behavior generalizes across surfaces without manual gain tuning.
+**Per-leg adaptive stiffness**: beyond 12 joint position targets, the policy outputs a stiffness scalar per leg. The stance leg stiffens to support body weight; the swing leg softens to absorb contact impulses. Fixed Kp/Kd cannot express this timing-dependent compliance; with learned stiffness the policy adapts emergently, and the behavior generalizes across surfaces without manual gain tuning.
 
-**Stair climbing (blind)** — the stair policy fine-tunes from the walking checkpoint on a 13-level heightfield curriculum (step heights 2–15 cm). The deployable actor uses the same 49 proprioceptive signals; only the training critic receives a height scan. Key reward modifications: pitch is not penalized (expected during ascent), foot clearance is computed terrain-relative, and target foot height increases from 7.5 cm to 17 cm to clear step edges.
+**Stair climbing (blind)**: the stair policy fine-tunes from the walking checkpoint on a 13-level heightfield curriculum (step heights 2–15 cm). The deployable actor uses the same 49 proprioceptive signals; only the training critic receives a height scan. Key reward modifications: pitch is not penalized (expected during ascent), foot clearance is computed terrain-relative, and target foot height increases from 7.5 cm to 17 cm to clear step edges.
 
 ## Conclusions and Future Work
 
@@ -70,7 +70,7 @@ In practice the gap persists in subtle ways. Successful policies achieve the goa
 - **System identification for actuators**: fitting simulator actuator parameters to real motor response (frequency response, current-to-torque mapping) would substantially reduce the PD gain mismatch that is currently compensated by the KP_FACTOR deployment knob
 - **Exteroceptive sensing**: adding a depth camera or LiDAR to the actor observation would let the robot perceive terrain ahead of time, likely closing the remaining reliability gap in stair climbing
 - **High-level policy**: a hierarchical controller that uses LiDAR or camera perception to select between low-level locomotion policies (e.g. switching from flat-ground walking to stair-climbing mode upon detecting stairs)
-- **Sample efficiency**: the current pipeline trains with 4096 parallel environments for up to 10,000 iterations, which works but is not particularly efficient. Improving sample efficiency — through better reward shaping, off-policy methods, or more principled curriculum design — was not a focus of this work and remains an open direction
+- **Sample efficiency**: the current pipeline trains with 4096 parallel environments for up to 10,000 iterations, which works but is not particularly efficient. Improving sample efficiency through better reward shaping, off-policy methods, or more principled curriculum design was not a focus of this work and remains an open direction
 
 ## Inspirations
 
@@ -87,7 +87,7 @@ Both repositories are forks; this work builds on top of existing infrastructure 
     <svg height="36" width="36" viewBox="0 0 16 16" fill="#111" style="flex-shrink:0;margin-top:3px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
     <div>
       <div style="font-weight:700;font-size:1.1rem;margin-bottom:6px;word-break:break-all;">saifahmadgit / go2-sim2real-locomotion-rl</div>
-      <div style="font-size:0.95rem;color:#555;">Reinforcement Learning Training — Genesis + PPO</div>
+      <div style="font-size:0.95rem;color:#555;">Reinforcement Learning Training, Genesis + PPO</div>
     </div>
   </a>
   <a href="https://github.com/saifahmadgit/go2-sim2real-deploy" target="_blank" rel="noopener"
@@ -95,7 +95,7 @@ Both repositories are forks; this work builds on top of existing infrastructure 
     <svg height="36" width="36" viewBox="0 0 16 16" fill="#111" style="flex-shrink:0;margin-top:3px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
     <div>
       <div style="font-weight:700;font-size:1.1rem;margin-bottom:6px;">saifahmadgit / go2-sim2real-deploy</div>
-      <div style="font-size:0.95rem;color:#555;">Hardware Deployment — Unitree Python SDK</div>
+      <div style="font-size:0.95rem;color:#555;">Hardware Deployment, Unitree Python SDK</div>
     </div>
   </a>
 </div>
