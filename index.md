@@ -6,13 +6,13 @@ title: Portfolio
 <!-- 1) Quadruped -->
 <div class="project-row">
   <div class="project-media">
-    <img src="{{ '/assets/gifs/stairs_final.gif' | relative_url }}" alt="Unitree Go2 RL Locomotion" loading="lazy">
+    <img src="{{ '/assets/gifs/RL_home.gif' | relative_url }}" alt="Unitree Go2 RL Locomotion" loading="lazy">
   </div>
   <div class="project-info">
     <p><a class="project-title-link" href="{{ site.baseurl }}/projects/quadruped-locomotion-rl/"><strong>Sim-to-Real Reinforcement Learning Walking Including Stairs</strong></a></p>
     <p class="project-tags"><span class="tag">Reinforcement Learning</span><span class="tag">Genesis Simulation</span><span class="tag">Sim-to-Real Transfer</span></p>
     <p>Closing the sim-to-real gap for quadruped locomotion. PPO policies trained in Genesis with domain randomization, sensor noise injection, and latency modeling deploy directly on a real Unitree Go2. The robot achieves omnidirectional walking and blind stair climbing, using only proprioceptive sensing and a learned per-leg stiffness that adapts compliance in real time.</p>
-    <p><a href="https://github.com/saifahmadgit/quadruped_locomotion_UnitreeGo2_RL" target="_blank" rel="noopener">GitHub ↗</a></p>
+    <p><a href="https://github.com/saifahmadgit/go2-sim2real-locomotion-rl" target="_blank" rel="noopener">GitHub ↗</a></p>
   </div>
 </div>
 
