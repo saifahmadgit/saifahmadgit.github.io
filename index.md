@@ -6,7 +6,7 @@ title: Portfolio
 <!-- 1) Quadruped -->
 <div class="project-row">
   <div class="project-media">
-    <img src="{{ '/assets/gifs/RL_home.gif' | relative_url }}" alt="Unitree Go2 RL Locomotion" loading="lazy">
+    <img src="{{ '/assets/gifs/RL_overview.gif' | relative_url }}" alt="Unitree Go2 RL Locomotion" loading="lazy">
   </div>
   <div class="project-info">
     <p><a class="project-title-link" href="{{ site.baseurl }}/projects/quadruped-locomotion-rl/"><strong>Sim-to-Real Reinforcement Learning Walking Including Stairs</strong></a></p>
