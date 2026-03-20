@@ -26,9 +26,9 @@ The core problem is the **sim-to-real gap**: unmodeled actuator dynamics, sensin
 
 The pipeline runs in four stages with explicit feedback loops (see diagram):
 
-**1. Genesis simulation** — 4096 parallel environments generate rollouts using an **asymmetric actor-critic**: the actor sees only the 49 proprioceptive signals available on hardware; the critic additionally receives privileged ground-truth quantities (friction, velocity, mass, push forces, terrain heights). This lets the critic guide training without making the deployable actor dependent on information unavailable at runtime.
+**1. RL Training** — PPO runs across **4096 parallel environments** in Genesis. The **actor** is constrained to the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action); the **critic** additionally receives privileged ground-truth quantities — friction, base velocity, mass distribution, push forces, terrain heights. This asymmetric design lets the critic produce accurate value estimates without the actor depending on information unavailable at deployment.
 
-**2. Convergence check via TensorBoard** — reward curves and entropy are inspected after training. Convergence is not clean; as DR difficulty ramps up with noise, latency, and push forces added incrementally, reward oscillates rather than settling. Partially converged checkpoints carry forward if they show promising behavior.
+**2. Convergence Check** — reward curves and policy entropy are monitored via TensorBoard. Clean convergence is not expected: as the metric-gated curriculum advances DR difficulty and layers in noise, latency, and push forces incrementally, reward oscillates rather than settling. A checkpoint is carried forward if it shows stable gait and acceptable tracking — not necessarily maximum reward.
 
 <div style="display:flex;gap:32px;flex-wrap:wrap;margin:16px 0;justify-content:center;">
   <figure style="width:33%;margin:0;text-align:center;">
@@ -41,9 +41,15 @@ The pipeline runs in four stages with explicit feedback loops (see diagram):
   </figure>
 </div>
 
-**3. Qualitative stress testing in sim** — gait naturalness, push recovery, and friction/payload extremes are visually inspected. Policies that don't pass don't move to hardware.
+**3. Evaluation** — the policy is stress-tested in simulation before any hardware trial. Gait naturalness, push recovery, friction and payload extremes are evaluated under teleoperation. Policies that fail visual inspection are discarded; only checkpoints that demonstrate robust behavior across these conditions proceed to hardware.
 
-**4. Hardware deployment** — the actor runs at **50 Hz**; motor commands stream over DDS at **500 Hz**. Real-robot trials feed back into the next training cycle, adjusting DR ranges, reward weights, or curriculum thresholds.
+### Stress Test in Simulation
+
+<img src="{{ '/assets/gifs/stress_test_sim.gif' | relative_url }}" alt="Stress test in simulation" style="width:100%;height:auto;display:block;margin:16px 0;border-radius:8px;">
+
+**4. Deployment** — the actor runs at **50 Hz** on-robot; a parallel thread streams joint position targets and per-leg Kp/Kd commands over DDS at **500 Hz**, saturating the Go2's native LowCmd protocol. The robot ramps to a default stand pose over 4 seconds before the policy activates, and a slew limiter caps per-step joint target changes at 0.1 rad to prevent jerk. Hardware trials feed directly back into the next training cycle — adjusting DR parameter ranges, reward weights, or curriculum thresholds.
+
+<!-- deployment gif goes here -->
 
 ## Key Technical Contributions
 
