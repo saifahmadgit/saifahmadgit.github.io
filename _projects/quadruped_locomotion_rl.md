@@ -28,6 +28,12 @@ The pipeline runs in four stages with explicit feedback loops (see diagram):
 
 **1. RL Training**: PPO runs across **4096 parallel environments** in Genesis. The **actor** is constrained to the 49 proprioceptive signals available on hardware (IMU, joint encoders, last action); the **critic** additionally receives privileged ground-truth quantities: friction, base velocity, mass distribution, push forces, terrain heights. This asymmetric design lets the critic produce accurate value estimates without the actor depending on information unavailable at deployment.
 
+### Asymmetric Actor-Critic Training with Metric-Gated Curriculum
+
+<img src="{{ '/assets/images/Training.png' | relative_url }}" alt="RL training pipeline with asymmetric actor-critic and curriculum" style="width:70%;height:auto;display:block;margin:16px auto;border-radius:8px;">
+
+The curriculum monitor evaluates policy performance at regular intervals and adjusts domain randomization difficulty accordingly. Rather than scheduling difficulty on a fixed timeline, advancement is **earned**: all three conditions must hold for 5 consecutive checks before difficulty increases by 0.01. If the fall rate crosses 40% for just 2 consecutive checks, difficulty retreats by 0.03 — three times faster than it advances. This asymmetry prevents the policy from getting stuck in a regime it cannot handle while ensuring it consolidates competence before tackling harder terrain. Throughout training, 20% of environments are always sampled from easier difficulty levels to prevent catastrophic forgetting of simpler behaviors.
+
 **2. Convergence Check**: reward curves and policy entropy are monitored via TensorBoard. Clean convergence is not expected: as the metric-gated curriculum advances DR difficulty and layers in noise, latency, and push forces incrementally, reward oscillates rather than settling. A checkpoint is carried forward if it shows stable gait and acceptable tracking, not necessarily maximum reward.
 
 <div style="display:flex;gap:32px;flex-wrap:wrap;margin:16px 0;justify-content:center;">
@@ -51,7 +57,7 @@ The pipeline runs in four stages with explicit feedback loops (see diagram):
 
 <!-- deployment gif goes here -->
 
-## Key Technical Contributions
+## Design Decisions
 
 **Metric-gated curriculum**: adding DR, noise, latency, and pushes simultaneously causes PPO to diverge. A metric-gated curriculum increases difficulty only after the policy demonstrates sustained performance across timeout rate, velocity tracking, and fall rate. Difficulty retreats three times faster than it advances, preventing catastrophic forgetting.
 
