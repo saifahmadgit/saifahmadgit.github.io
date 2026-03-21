@@ -16,7 +16,20 @@ title: Portfolio
   </div>
 </div>
 
-<!-- 2) Franka -->
+<!-- 2) EKF SLAM -->
+<div class="project-row">
+  <div class="project-media">
+    <img src="{{ '/assets/gifs/SLAM.gif' | relative_url }}" alt="EKF SLAM from Scratch" loading="lazy">
+  </div>
+  <div class="project-info">
+    <p><a class="project-title-link" href="{{ site.baseurl }}/projects/ekf-slam/"><strong>EKF SLAM from Scratch in C++</strong></a></p>
+    <p class="project-tags"><span class="tag">EKF SLAM</span><span class="tag">C++</span><span class="tag">ROS 2</span><span class="tag">TurtleBot3</span></p>
+    <p>Extended Kalman Filter SLAM implemented entirely from scratch in C++ and deployed on a real TurtleBot3 Burger. Landmark detection via LiDAR clustering and circle fitting, Mahalanobis-distance data association, and simultaneous pose and map correction reduce localization error by up to 99.7% compared to pure odometry.</p>
+    <p><a href="https://github.com/saifahmadgit/EKF_SLAM_from_Scratch" target="_blank" rel="noopener">GitHub ↗</a></p>
+  </div>
+</div>
+
+<!-- 3) Franka -->
 <div class="project-row">
   <div class="project-media">
     <img src="{{ '/assets/gifs/franka_demo.gif' | relative_url }}" alt="Franka Vision-Guided Pick & Place" loading="lazy">
@@ -30,7 +43,7 @@ title: Portfolio
   </div>
 </div>
 
-<!-- 3) Grasp -->
+<!-- 4) Grasp -->
 <div class="project-row">
   <div class="project-media">
     <img src="{{ '/assets/gifs/grasp_demo.gif' | relative_url }}" alt="Prompt-to-Pose Grasp Estimation" loading="lazy">
@@ -43,7 +56,7 @@ title: Portfolio
   </div>
 </div>
 
-<!-- 4) Jack -->
+<!-- 5) Jack -->
 <div class="project-row">
   <div class="project-media">
     <img src="{{ '/assets/gifs/jack_demo.gif' | relative_url }}" alt="Jack-in-the-Box Dynamics" loading="lazy">
@@ -55,7 +68,7 @@ title: Portfolio
   </div>
 </div>
 
-<!-- 5) Pen -->
+<!-- 6) Pen -->
 <div class="project-row">
   <div class="project-media">
     <img src="{{ '/assets/gifs/pen_demo.gif' | relative_url }}" alt="Pen Catcher Robot" loading="lazy">

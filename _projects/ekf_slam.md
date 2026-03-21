@@ -1,7 +1,7 @@
 ---
 layout: project
 title: EKF SLAM from Scratch in C++
-order: 6
+order: 2
 tech_tags: "EKF SLAM, C++, ROS2, TurtleBot3"
 gif: /assets/gifs/SLAM.gif
 ---
